@@ -100,3 +100,4 @@ const questions = [
     answer: '편의성',
   },
 
+]
