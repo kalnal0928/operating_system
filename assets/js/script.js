@@ -38,11 +38,6 @@ function init() {
     prevButton.addEventListener('click', showPreviousQuestion);
     nextButton.addEventListener('click', showNextQuestion);
     
-    // 기존 필터 변경 이벤트 제거하고 시작 버튼에 등록
-    chapterFilter.removeEventListener('change', applyFilters);
-    typeFilter.removeEventListener('change', applyFilters);
-    startButton.addEventListener('click', startQuiz);
-    
     // 리셋 버튼 이벤트 리스너
     resetButton.addEventListener('click', resetQuiz);
     
@@ -57,230 +52,39 @@ function showSelectionScreen() {
     selectionContainer.style.display = 'block';
     quizContainer.style.display = 'none';
     
-    // 챕터 및 유형 필터 초기화
-    populateFilters();
+    // 기본값 설정
+    const chapterFilter = document.getElementById('chapter-filter');
+    const typeFilter = document.getElementById('type-filter');
+    
+    if (chapterFilter) chapterFilter.value = '전체';
+    if (typeFilter) typeFilter.value = '전체';
 }
 
-// 드롭다운 메뉴 수정 함수
-function populateFilters() {
-    // 1. 옵션이 선택하세요로만 표시되는 문제 해결
-    
-    // 챕터 드롭다운 완전히 새로 생성
-    chapterFilter.innerHTML = '';
-    
-    // 전체 옵션 추가
-    const allChapterOption = document.createElement('option');
-    allChapterOption.value = "전체";
-    allChapterOption.textContent = "전체";
-    chapterFilter.appendChild(allChapterOption);
-    
-    // 수동으로 챕터 옵션 추가 (항상 이 옵션들이 표시되도록)
-    const chapters = ["1장", "3장", "4장"];
-    chapters.forEach(chapter => {
-        const option = document.createElement('option');
-        option.value = chapter;
-        option.textContent = chapter;
-        chapterFilter.appendChild(option);
-    });
-    
-    // 유형 드롭다운 완전히 새로 생성
-    typeFilter.innerHTML = '';
-    
-    // 전체 옵션 추가
-    const allTypeOption = document.createElement('option');
-    allTypeOption.value = "전체";
-    allTypeOption.textContent = "전체";
-    typeFilter.appendChild(allTypeOption);
-    
-    // 수동으로 유형 옵션 추가 (항상 이 옵션들이 표시되도록)
-    const types = [
-        { value: 'multiple-choice', label: '객관식' },
-        { value: 'fill-in-blank', label: '주관식' },
-        { value: 'essay', label: '서술형' }
-    ];
-    
-    types.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type.value;
-        option.textContent = type.label;
-        typeFilter.appendChild(option);
-    });
-    
-    // 개발 환경에서 디버깅 로그
-    console.log('드롭다운 옵션 생성됨:', {
-        '챕터 옵션 수': chapterFilter.options.length,
-        '유형 옵션 수': typeFilter.options.length
-    });
-    
-    // 2. 선택하세요 옵션이 있으면 전체로 변경
-    Array.from(chapterFilter.options).forEach(opt => {
-        if (opt.textContent === '선택하세요') {
-            opt.textContent = '전체';
-            opt.value = '전체';
-        }
-    });
-    
-    Array.from(typeFilter.options).forEach(opt => {
-        if (opt.textContent === '선택하세요') {
-            opt.textContent = '전체';
-            opt.value = '전체';
-        }
-    });
-    
-    // 3. CSS로 드롭다운 항목 강제 표시
-    const style = document.createElement('style');
-    style.textContent = `
-        #chapter-filter option, #type-filter option {
-            display: block !important;
-        }
-        
-        /* 드롭다운 스타일 개선 */
-        select {
-            width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        
-        /* 드롭다운 옵션 스타일 */
-        option {
-            padding: 8px;
-        }
-        
-        /* 드롭다운 활성화 시 스타일 */
-        select:focus {
-            outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // 4. 초기값 설정
-    chapterFilter.value = '전체';
-    typeFilter.value = '전체';
-    
-    // 5. 이벤트 리스너 추가 (변경 시 드롭다운 메뉴 항목 체크)
-    chapterFilter.addEventListener('click', validateDropdownOptions);
-    typeFilter.addEventListener('click', validateDropdownOptions);
-}
-
-// 드롭다운 옵션 유효성 검사 - 필요시 옵션 다시 추가
-function validateDropdownOptions() {
-    // 챕터 옵션 확인
-    if (chapterFilter.options.length < 4) { // 전체 + 3 장
-        console.warn('챕터 옵션이 누락되었습니다. 다시 추가합니다.');
-        
-        // 현재 옵션 보존
-        const currentValue = chapterFilter.value;
-        
-        // 옵션 새로 생성
-        chapterFilter.innerHTML = '';
-        
-        // 전체 옵션
-        const allChapterOption = document.createElement('option');
-        allChapterOption.value = "전체";
-        allChapterOption.textContent = "전체";
-        chapterFilter.appendChild(allChapterOption);
-        
-        // 각 장 옵션
-        ["1장", "3장", "4장"].forEach(chapter => {
-            const option = document.createElement('option');
-            option.value = chapter;
-            option.textContent = chapter;
-            chapterFilter.appendChild(option);
-        });
-        
-        // 기존 값 복원
-        chapterFilter.value = currentValue;
-    }
-    
-    // 유형 옵션 확인
-    if (typeFilter.options.length < 4) { // 전체 + 3 유형
-        console.warn('유형 옵션이 누락되었습니다. 다시 추가합니다.');
-        
-        // 현재 옵션 보존
-        const currentValue = typeFilter.value;
-        
-        // 옵션 새로 생성
-        typeFilter.innerHTML = '';
-        
-        // 전체 옵션
-        const allTypeOption = document.createElement('option');
-        allTypeOption.value = "전체";
-        allTypeOption.textContent = "전체";
-        typeFilter.appendChild(allTypeOption);
-        
-        // 각 유형 옵션
-        [
-            { value: 'multiple-choice', label: '객관식' },
-            { value: 'fill-in-blank', label: '주관식' },
-            { value: 'essay', label: '서술형' }
-        ].forEach(type => {
-            const option = document.createElement('option');
-            option.value = type.value;
-            option.textContent = type.label;
-            typeFilter.appendChild(option);
-        });
-        
-        // 기존 값 복원
-        typeFilter.value = currentValue;
-    }
-}
-
-// 퀴즈 시작 함수 (신규)
-function startQuiz() {
-    // 필터 적용
-    applyFilters();
-    
-    // 필터링된 문제가 있는지 확인
-    if (filteredQuestions.length === 0) {
-        alert('선택한 조건에 맞는 문제가 없습니다. 다른 조건을 선택해주세요.');
-        return;
-    }
-    
-    // 퀴즈 시작 상태로 변경
-    quizStarted = true;
-    
-    // 선택 화면 숨기고 퀴즈 화면 표시
-    selectionContainer.style.display = 'none';
-    quizContainer.style.display = 'block';
-    
-    // 첫 문제 표시
-    currentQuestionIndex = 0;
-    updateQuestionCounter();
-    displayQuestion();
-}
-
-// 퀴즈 리셋 함수 (신규)
-function resetQuiz() {
-    // 현재 진행 중인 퀴즈 종료하고 선택 화면으로 돌아가기
-    incorrectQuestions = [];
-    isReviewMode = false;
-    quizStarted = false;
-    
-    showSelectionScreen();
-}
-
-// 필터 적용 함수 수정 (이미지에 맞게 기본값 설정)
+// 필터 적용 함수
 function applyFilters() {
+    const chapterFilter = document.getElementById('chapter-filter');
+    const typeFilter = document.getElementById('type-filter');
+    
+    if (!chapterFilter || !typeFilter) return;
+    
     const chapterValue = chapterFilter.value;
     const typeValue = typeFilter.value;
     
-    console.log('필터 적용:', { chapter: chapterValue, type: typeValue });
+    console.log('필터 적용:', { 챕터: chapterValue, 유형: typeValue });
     
-    // 필터 로직 수정
     filteredQuestions = questions.filter(question => {
         const chapterMatch = chapterValue === "전체" || question.chapter === chapterValue;
         const typeMatch = typeValue === "전체" || question.type === typeValue;
         return chapterMatch && typeMatch;
     });
     
-    console.log(`필터 적용 결과: ${filteredQuestions.length}개 문제 선택됨`);
+    console.log(`필터링된 문제: ${filteredQuestions.length}개`);
     
-    // 버튼 상태 업데이트
-    updateButtonStates();
-    updateQuestionCounter();
+    // 퀴즈가 시작된 경우에만 버튼 상태와 카운터 업데이트
+    if (quizStarted) {
+        updateButtonStates();
+        updateQuestionCounter();
+    }
 }
 
 // 문제 표시
@@ -623,159 +427,261 @@ function returnToNormalMode() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 더 강력한 방식으로 헤더 영역 정리
-    function cleanupHeader() {
-        // 1. 헤더 요소 찾기 (여러 선택자로 시도)
-        const header = document.querySelector('header') || 
-                      document.querySelector('.navbar') || 
-                      document.querySelector('.header-area');
-                      
-        if (header) {
-            // 제목 요소 저장
-            const title = header.querySelector('h1') || header.querySelector('h2');
-            const titleText = title ? title.textContent : '2025 운영체제 기말';
-            
-            // 헤더 내용 지우기
-            header.innerHTML = '';
-            
-            // 제목만 다시 추가
-            const newTitle = document.createElement('h1');
-            newTitle.textContent = titleText;
-            newTitle.style.textAlign = 'center';
-            newTitle.style.padding = '20px 0';
-            header.appendChild(newTitle);
-        }
-        
-        // 2. 상단에 있는 모든 select 요소 찾아서 제거 (더 직접적인 접근)
-        const topSelects = document.querySelectorAll('body > * select');
-        topSelects.forEach(select => {
-            // 하단 선택 영역의 select는 제외 (id로 구분)
-            if (select.id !== 'chapter-filter' && select.id !== 'type-filter') {
-                // 부모 요소까지 찾아가서 제거
-                const parent = select.parentElement;
-                if (parent) parent.style.display = 'none';
-                select.style.display = 'none';
-            }
-        });
-        
-        // 3. 강제 CSS 스타일 추가
-        const style = document.createElement('style');
-        style.textContent = `
-            /* 상단 영역의 선택기 요소 강제 숨김 */
-            body > header select,
-            body > header .selector-container,
-            body > header label,
-            body > header form,
-            body > .navbar select,
-            body > .navbar .selector-container,
-            body > .navbar label,
-            body > .navbar form,
-            body > div:not(#selection-container):not(#quiz-container) select,
-            body > div:not(#selection-container):not(#quiz-container) label {
-                display: none !important;
-            }
-            
-            /* 헤더 스타일 정리 */
-            header, .navbar {
-                padding: 20px 0;
-                text-align: center;
-                margin-bottom: 30px;
-            }
-            
-            /* 하단 선택기는 유지 */
-            #selection-container select,
-            #chapter-filter,
-            #type-filter {
-                display: block !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // 헤더 정리 함수 실행
+    // 헤더에서는 제목만 남기고 모든 드롭박스 제거
     cleanupHeader();
     
-    // 기존 초기화 함수 호출
-    init();
+    // 하단에 새로운 드롭박스 생성
+    createNewDropdowns();
     
-    // 드롭다운 메뉴 강제 재구성 함수 호출
-    fixDropdownMenus();
+    // 기존 초기화 함수 호출 (드롭박스 관련 코드 제외)
+    init();
 });
 
-// 페이지 로드 시 추가 실행 코드 (기존 DOMContentLoaded 이벤트 핸들러 내부에 추가)
-function fixDropdownMenus() {
-    // 1초 후 드롭다운 메뉴 강제 재구성 (DOM이 완전히 로드된 후)
-    setTimeout(() => {
-        console.log('드롭다운 메뉴 강제 재구성 시작...');
+// 헤더 정리 함수 - 제목만 남기고 모든 드롭박스 제거
+function cleanupHeader() {
+    const header = document.querySelector('header') || 
+                  document.querySelector('.navbar') || 
+                  document.querySelector('.header-area');
+                  
+    if (header) {
+        // 제목 요소 저장
+        const title = header.querySelector('h1') || header.querySelector('h2');
+        const titleText = title ? title.textContent : '2025 운영체제 기말';
         
-        // 출제 범위 드롭다운 강제 재구성
-        const chapterSelect = document.getElementById('chapter-filter');
-        if (chapterSelect) {
-            // 현재 값 백업
-            const currentValue = chapterSelect.value;
-            
-            // 직접 HTML 코드로 대체 (더 강력한 방법)
-            chapterSelect.outerHTML = `
-                <select id="chapter-filter" class="form-control">
-                    <option value="전체">전체</option>
-                    <option value="1장">1장</option>
-                    <option value="3장">3장</option>
-                    <option value="4장">4장</option>
-                </select>
-            `;
-            
-            // 변수 재할당 (새 DOM 요소 참조)
-            const newChapterSelect = document.getElementById('chapter-filter');
-            if (newChapterSelect) {
-                // 이전 값 복원
-                newChapterSelect.value = currentValue;
-                // 이벤트 리스너 다시 연결
-                newChapterSelect.addEventListener('click', validateDropdownOptions);
-            }
+        // 헤더 내용 지우기
+        header.innerHTML = '';
+        
+        // 제목만 다시 추가
+        const newTitle = document.createElement('h1');
+        newTitle.textContent = titleText;
+        newTitle.style.textAlign = 'center';
+        newTitle.style.padding = '20px 0';
+        header.appendChild(newTitle);
+    }
+    
+    // 모든 상단 드롭박스 및 관련 요소 제거를 위한 CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        body > header select,
+        body > header .selector-container,
+        body > header label,
+        body > .navbar select,
+        body > .navbar .selector-container,
+        body > .navbar label,
+        body > div:not(#selection-container) select,
+        body > div:not(#selection-container) label {
+            display: none !important;
         }
         
-        // 문제 유형 드롭다운 강제 재구성
-        const typeSelect = document.getElementById('type-filter');
-        if (typeSelect) {
-            // 현재 값 백업
-            const currentValue = typeSelect.value;
-            
-            // 직접 HTML 코드로 대체
-            typeSelect.outerHTML = `
-                <select id="type-filter" class="form-control">
-                    <option value="전체">전체</option>
-                    <option value="multiple-choice">객관식</option>
-                    <option value="fill-in-blank">주관식</option>
-                    <option value="essay">서술형</option>
-                </select>
-            `;
-            
-            // 변수 재할당
-            const newTypeSelect = document.getElementById('type-filter');
-            if (newTypeSelect) {
-                // 이전 값 복원
-                newTypeSelect.value = currentValue;
-                // 이벤트 리스너 다시 연결
-                newTypeSelect.addEventListener('click', validateDropdownOptions);
-            }
+        header, .navbar {
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
         }
-        
-        // 필터 버튼에 이벤트 리스너 재연결
-        const applyFiltersButton = document.getElementById('apply-filters');
-        if (applyFiltersButton) {
-            // 기존 이벤트 리스너 제거 후 다시 추가
-            applyFiltersButton.replaceWith(applyFiltersButton.cloneNode(true));
-            document.getElementById('apply-filters').addEventListener('click', applyFilters);
-        }
-        
-        // 시작 버튼에 이벤트 리스너 재연결
-        const startButton = document.getElementById('start-button');
-        if (startButton) {
-            // 기존 이벤트 리스너 제거 후 다시 추가
-            startButton.replaceWith(startButton.cloneNode(true));
-            document.getElementById('start-button').addEventListener('click', startQuiz);
-        }
-        
-        console.log('드롭다운 메뉴 강제 재구성 완료');
-    }, 1000);
+    `;
+    document.head.appendChild(style);
 }
+
+// 하단에 새로운 드롭박스 생성 함수
+function createNewDropdowns() {
+    // 선택 컨테이너 찾기
+    const selectionContainer = document.getElementById('selection-container');
+    if (!selectionContainer) return;
+    
+    // 기존 드롭다운 요소 참조 (이벤트 핸들러 연결을 위해)
+    const chapterFilterId = 'chapter-filter';
+    const typeFilterId = 'type-filter';
+    
+    // 출제 범위 및 유형 선택 영역 생성
+    const selectionArea = document.createElement('div');
+    selectionArea.className = 'selection-area';
+    selectionArea.innerHTML = `
+        <h2>출제 범위 및 유형 선택</h2>
+        
+        <div class="filter-group">
+            <label for="${chapterFilterId}">출제 범위:</label>
+            <select id="${chapterFilterId}" class="form-control">
+                <option value="전체">전체</option>
+                <option value="1장">1장</option>
+                <option value="3장">3장</option>
+                <option value="4장">4장</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="${typeFilterId}">문제 유형:</label>
+            <select id="${typeFilterId}" class="form-control">
+                <option value="전체">전체</option>
+                <option value="multiple-choice">객관식</option>
+                <option value="fill-in-blank">주관식</option>
+                <option value="essay">서술형</option>
+            </select>
+        </div>
+        
+        <button id="apply-filters" class="btn btn-primary">필터 적용</button>
+        <button id="start-button" class="btn btn-success">학습 시작하기</button>
+    `;
+    
+    // 스타일 추가
+    const style = document.createElement('style');
+    style.textContent = `
+        .selection-area {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .selection-area h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: #4CAF50;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 기존 내용을 새 컨텐츠로 교체
+    selectionContainer.innerHTML = '';
+    selectionContainer.appendChild(selectionArea);
+    
+    // 이벤트 리스너 연결
+    document.getElementById('apply-filters').addEventListener('click', applyFilters);
+    document.getElementById('start-button').addEventListener('click', startQuiz);
+}
+
+// 초기화 함수 수정 - 드롭박스 관련 코드 제거
+function init() {
+    incorrectQuestions = [];
+    isReviewMode = false;
+    quizStarted = false;
+    
+    // 선택 화면 표시, 문제 화면 숨김
+    showSelectionScreen();
+    
+    // 이벤트 리스너 등록 (드롭박스 관련 제외)
+    submitButton.addEventListener('click', handleSubmit);
+    showAnswerButton.addEventListener('click', showAnswer);
+    prevButton.addEventListener('click', showPreviousQuestion);
+    nextButton.addEventListener('click', showNextQuestion);
+    resetButton.addEventListener('click', resetQuiz);
+}
+
+// 선택 화면 표시 함수 수정 - 드롭박스 초기화 코드 제거
+function showSelectionScreen() {
+    selectionContainer.style.display = 'block';
+    quizContainer.style.display = 'none';
+    
+    // 기본값 설정
+    const chapterFilter = document.getElementById('chapter-filter');
+    const typeFilter = document.getElementById('type-filter');
+    
+    if (chapterFilter) chapterFilter.value = '전체';
+    if (typeFilter) typeFilter.value = '전체';
+}
+
+// 필터 적용 함수
+function applyFilters() {
+    const chapterFilter = document.getElementById('chapter-filter');
+    const typeFilter = document.getElementById('type-filter');
+    
+    if (!chapterFilter || !typeFilter) return;
+    
+    const chapterValue = chapterFilter.value;
+    const typeValue = typeFilter.value;
+    
+    console.log('필터 적용:', { 챕터: chapterValue, 유형: typeValue });
+    
+    filteredQuestions = questions.filter(question => {
+        const chapterMatch = chapterValue === "전체" || question.chapter === chapterValue;
+        const typeMatch = typeValue === "전체" || question.type === typeValue;
+        return chapterMatch && typeMatch;
+    });
+    
+    console.log(`필터링된 문제: ${filteredQuestions.length}개`);
+    
+    // 퀴즈가 시작된 경우에만 버튼 상태와 카운터 업데이트
+    if (quizStarted) {
+        updateButtonStates();
+        updateQuestionCounter();
+    }
+}
+
+// 퀴즈 시작 함수
+function startQuiz() {
+    // 필터 적용
+    applyFilters();
+    
+    // 필터링된 문제가 있는지 확인
+    if (filteredQuestions.length === 0) {
+        alert('선택한 조건에 맞는 문제가 없습니다. 다른 조건을 선택해주세요.');
+        return;
+    }
+    
+    // 퀴즈 시작 상태로 변경
+    quizStarted = true;
+    
+    // 선택 화면 숨기고 퀴즈 화면 표시
+    selectionContainer.style.display = 'none';
+    quizContainer.style.display = 'block';
+    
+    // 첫 문제 표시
+    currentQuestionIndex = 0;
+    updateQuestionCounter();
+    displayQuestion();
+}
+
