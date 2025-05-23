@@ -35,7 +35,7 @@ function init() {
 }
 
 // 필터 적용
-function applyFilters() {
+var applyFilters = function() {
     reviewMode = false;
     answeredQuestions = [];
     const chapterValue = chapterFilter.value;
