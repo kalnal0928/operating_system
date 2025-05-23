@@ -234,11 +234,11 @@ function handleSubmit() {
                 return;
             }
     }
-    
+
     // 결과 표시
     displayResult(isCorrect, userAnswer, currentQuestion.answer);
 
-    // 답변 기록
+    // 답변 기록 (filteredQuestions 기준 인덱스 사용)
     answeredQuestions[currentQuestionIndex] = { index: currentQuestionIndex, isCorrect, userAnswer };
 
     // 모든 문제를 다 풀었는지 확인
@@ -251,7 +251,7 @@ function checkAllAnswered() {
     if (answeredQuestions.length === filteredQuestions.length &&
         answeredQuestions.every(ans => ans !== undefined)) {
 
-        // 틀린 문제만 추출
+        // 틀린 문제만 추출 (filteredQuestions 기준)
         wrongQuestions = answeredQuestions
             .map((ans, idx) => ({ ...ans, question: filteredQuestions[idx] }))
             .filter(ans => ans.isCorrect === false);
@@ -289,7 +289,7 @@ function startWrongReview() {
     // filteredQuestions를 틀린 문제로 교체
     filteredQuestions = wrongQuestions.map(w => w.question);
     currentQuestionIndex = 0;
-    answeredQuestions = [];
+    answeredQuestions = new Array(filteredQuestions.length); // 인덱스 맞추기
     updateQuestionCounter();
     displayQuestion();
     showMessage('틀린 문제만 다시 풀어보세요!', 'info');
