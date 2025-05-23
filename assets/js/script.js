@@ -136,21 +136,18 @@ function displayQuestion() {
     switch (currentQuestion.type) {
         case 'multiple-choice':
             displayMultipleChoiceQuestion(currentQuestion);
-            // 객관식일 때는 버튼 숨기기
-            submitButton.style.display = 'none';
-            showAnswerButton.style.display = 'none';
+            submitButton.style.display = 'none';        // 제출 버튼 숨김
+            showAnswerButton.style.display = 'none';    // 정답 보기 버튼 숨김
             break;
         case 'fill-in-blank':
             displayFillInBlankQuestion(currentQuestion);
-            // 다른 문제 유형일 때는 버튼 표시
-            submitButton.style.display = 'block';
-            showAnswerButton.style.display = 'block';
+            submitButton.style.display = 'block';        // 제출 버튼 표시
+            showAnswerButton.style.display = 'block';    // 정답 보기 버튼 표시
             break;
         case 'essay':
             displayEssayQuestion(currentQuestion);
-            // 다른 문제 유형일 때는 버튼 표시
-            submitButton.style.display = 'block';
-            showAnswerButton.style.display = 'block';
+            submitButton.style.display = 'block';        // 제출 버튼 표시
+            showAnswerButton.style.display = 'block';    // 정답 보기 버튼 표시
             break;
     }
     
