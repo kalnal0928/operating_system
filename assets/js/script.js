@@ -697,4 +697,85 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 기존 초기화 함수 호출
     init();
+    
+    // 드롭다운 메뉴 강제 재구성 함수 호출
+    fixDropdownMenus();
 });
+
+// 페이지 로드 시 추가 실행 코드 (기존 DOMContentLoaded 이벤트 핸들러 내부에 추가)
+function fixDropdownMenus() {
+    // 1초 후 드롭다운 메뉴 강제 재구성 (DOM이 완전히 로드된 후)
+    setTimeout(() => {
+        console.log('드롭다운 메뉴 강제 재구성 시작...');
+        
+        // 출제 범위 드롭다운 강제 재구성
+        const chapterSelect = document.getElementById('chapter-filter');
+        if (chapterSelect) {
+            // 현재 값 백업
+            const currentValue = chapterSelect.value;
+            
+            // 직접 HTML 코드로 대체 (더 강력한 방법)
+            chapterSelect.outerHTML = `
+                <select id="chapter-filter" class="form-control">
+                    <option value="전체">전체</option>
+                    <option value="1장">1장</option>
+                    <option value="3장">3장</option>
+                    <option value="4장">4장</option>
+                </select>
+            `;
+            
+            // 변수 재할당 (새 DOM 요소 참조)
+            const newChapterSelect = document.getElementById('chapter-filter');
+            if (newChapterSelect) {
+                // 이전 값 복원
+                newChapterSelect.value = currentValue;
+                // 이벤트 리스너 다시 연결
+                newChapterSelect.addEventListener('click', validateDropdownOptions);
+            }
+        }
+        
+        // 문제 유형 드롭다운 강제 재구성
+        const typeSelect = document.getElementById('type-filter');
+        if (typeSelect) {
+            // 현재 값 백업
+            const currentValue = typeSelect.value;
+            
+            // 직접 HTML 코드로 대체
+            typeSelect.outerHTML = `
+                <select id="type-filter" class="form-control">
+                    <option value="전체">전체</option>
+                    <option value="multiple-choice">객관식</option>
+                    <option value="fill-in-blank">주관식</option>
+                    <option value="essay">서술형</option>
+                </select>
+            `;
+            
+            // 변수 재할당
+            const newTypeSelect = document.getElementById('type-filter');
+            if (newTypeSelect) {
+                // 이전 값 복원
+                newTypeSelect.value = currentValue;
+                // 이벤트 리스너 다시 연결
+                newTypeSelect.addEventListener('click', validateDropdownOptions);
+            }
+        }
+        
+        // 필터 버튼에 이벤트 리스너 재연결
+        const applyFiltersButton = document.getElementById('apply-filters');
+        if (applyFiltersButton) {
+            // 기존 이벤트 리스너 제거 후 다시 추가
+            applyFiltersButton.replaceWith(applyFiltersButton.cloneNode(true));
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+        }
+        
+        // 시작 버튼에 이벤트 리스너 재연결
+        const startButton = document.getElementById('start-button');
+        if (startButton) {
+            // 기존 이벤트 리스너 제거 후 다시 추가
+            startButton.replaceWith(startButton.cloneNode(true));
+            document.getElementById('start-button').addEventListener('click', startQuiz);
+        }
+        
+        console.log('드롭다운 메뉴 강제 재구성 완료');
+    }, 1000);
+}
