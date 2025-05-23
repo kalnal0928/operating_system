@@ -1,6 +1,6 @@
 import questions from './question.js';
 
-// DOM 요소 접근
+// DOM 요소 추가
 const questionContainer = document.getElementById('question-container');
 const resultContainer = document.getElementById('result-container');
 const submitButton = document.getElementById('submit-button');
@@ -11,31 +11,101 @@ const chapterFilter = document.getElementById('chapter-filter');
 const typeFilter = document.getElementById('type-filter');
 const currentNumberElement = document.getElementById('current-number');
 const totalQuestionsElement = document.getElementById('total-questions');
+const selectionContainer = document.getElementById('selection-container'); // 새로 추가
+const startButton = document.getElementById('start-button'); // 새로 추가
+const quizContainer = document.getElementById('quiz-container'); // 새로 추가
+const resetButton = document.getElementById('reset-button'); // 새로 추가
 
 // 상태 변수
 let currentQuestionIndex = 0;
-let filteredQuestions = [...questions];
+let filteredQuestions = [];  // 빈 배열로 시작
 let incorrectQuestions = []; // 틀린 문제 저장 배열
 let isReviewMode = false; // 오답 복습 모드 여부
+let quizStarted = false;  // 퀴즈 시작 여부 추가
 
-// 초기화 함수
+// 초기화 함수 수정
 function init() {
     incorrectQuestions = [];
     isReviewMode = false;
-    applyFilters();
-    updateQuestionCounter();
-    displayQuestion();
+    quizStarted = false;
+    
+    // 선택 화면 표시, 문제 화면 숨김
+    showSelectionScreen();
     
     // 이벤트 리스너 등록
     submitButton.addEventListener('click', handleSubmit);
     showAnswerButton.addEventListener('click', showAnswer);
     prevButton.addEventListener('click', showPreviousQuestion);
     nextButton.addEventListener('click', showNextQuestion);
-    chapterFilter.addEventListener('change', applyFilters);
-    typeFilter.addEventListener('change', applyFilters);
+    
+    // 기존 필터 변경 이벤트 제거하고 시작 버튼에 등록
+    chapterFilter.removeEventListener('change', applyFilters);
+    typeFilter.removeEventListener('change', applyFilters);
+    startButton.addEventListener('click', startQuiz);
+    
+    // 리셋 버튼 이벤트 리스너
+    resetButton.addEventListener('click', resetQuiz);
 }
 
-// 필터 적용
+// 선택 화면 표시 함수 (신규)
+function showSelectionScreen() {
+    selectionContainer.style.display = 'block';
+    quizContainer.style.display = 'none';
+    
+    // 챕터 및 유형 필터 초기화
+    populateFilters();
+}
+
+// 필터 채우기 함수 (선택적 추가)
+function populateFilters() {
+    // 이미 HTML에 고정된 필터 옵션이 있다면 이 함수는 필요 없음
+    // 필요한 경우 question.js에서 고유한 챕터와 유형 목록을 추출해서 필터 옵션 생성
+}
+
+// 퀴즈 시작 함수 (신규)
+function startQuiz() {
+    const chapterValue = chapterFilter.value;
+    const typeValue = typeFilter.value;
+    
+    // 필터 값 검증
+    if (chapterValue === '선택하세요' || typeValue === '선택하세요') {
+        alert('출제 범위와 유형을 모두 선택해주세요.');
+        return;
+    }
+    
+    // 필터 적용
+    applyFilters();
+    
+    // 필터링된 문제가 있는지 확인
+    if (filteredQuestions.length === 0) {
+        alert('선택한 조건에 맞는 문제가 없습니다. 다른 조건을 선택해주세요.');
+        return;
+    }
+    
+    // 퀴즈 시작 상태로 변경
+    quizStarted = true;
+    
+    // 선택 화면 숨기고 퀴즈 화면 표시
+    selectionContainer.style.display = 'none';
+    quizContainer.style.display = 'block';
+    
+    // 첫 문제 표시
+    currentQuestionIndex = 0;
+    updateQuestionCounter();
+    displayQuestion();
+}
+
+// 퀴즈 리셋 함수 (신규)
+function resetQuiz() {
+    // 현재 진행 중인 퀴즈 종료하고 선택 화면으로 돌아가기
+    incorrectQuestions = [];
+    isReviewMode = false;
+    quizStarted = false;
+    
+    showSelectionScreen();
+}
+
+// 필터 적용 함수 수정 (이벤트 핸들러에서 일반 함수로 변경)
 function applyFilters() {
     const chapterValue = chapterFilter.value;
     const typeValue = typeFilter.value;
@@ -45,21 +115,6 @@ function applyFilters() {
         const typeMatch = typeValue === 'all' || question.type === typeValue;
         return chapterMatch && typeMatch;
     });
-    
-    // 필터링된 질문이 없을 경우 메시지 표시
-    if (filteredQuestions.length === 0) {
-        questionContainer.innerHTML = '<p class="no-questions">선택한 조건에 맞는 문제가 없습니다.</p>';
-        submitButton.disabled = true;
-        showAnswerButton.disabled = true;
-        prevButton.disabled = true;
-        nextButton.disabled = true;
-        return;
-    }
-    
-    // 새로운 필터가 적용되면 첫 번째 문제로 이동
-    currentQuestionIndex = 0;
-    updateQuestionCounter();
-    displayQuestion();
     
     // 버튼 상태 업데이트
     updateButtonStates();
@@ -315,6 +370,11 @@ function showNextQuestion() {
             showMessage('모든 오답 문제를 복습했습니다!', 'success');
             // 일반 모드로 돌아가는 버튼 표시
             showReturnToNormalButton();
+        } else {
+            // 모든 문제를 다 풀었고 오답도 없는 경우
+            showMessage('모든 문제를 완료했습니다!', 'success');
+            // 다시 선택 화면으로 돌아가는 버튼 표시
+            showResetButton();
         }
     }
 }
@@ -392,9 +452,10 @@ function startReviewMode() {
 // 일반 모드로 돌아가는 함수 (신규)
 function returnToNormalMode() {
     isReviewMode = false;
-    // 원래 필터 상태로 복원
-    applyFilters();
-    showMessage('일반 모드로 돌아왔습니다.', 'info');
+    incorrectQuestions = []; // 오답 목록 초기화
+    
+    // 원래 필터 상태로 복원하되 선택 화면으로 돌아가기
+    resetQuiz();
 }
 
 // 페이지 로드 시 초기화

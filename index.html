@@ -34,27 +34,48 @@
     </header>
     
     <main>
-        <div class="question-controls">
-            <div class="counter">
-                <span id="current-number">1</span> / <span id="total-questions">0</span>
-            </div>
-            <div class="navigation">
-                <button id="prev-button" disabled>이전</button>
-                <button id="next-button">다음</button>
-            </div>
+        <!-- 선택 화면 컨테이너 -->
+        <div id="selection-container">
+          <h2>출제 범위 및 유형 선택</h2>
+          
+          <div class="filter-group">
+            <label for="chapter-filter">출제 범위:</label>
+            <select id="chapter-filter">
+              <option value="선택하세요">선택하세요</option>
+              <option value="all">전체</option>
+              <!-- 챕터 옵션들 -->
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label for="type-filter">문제 유형:</label>
+            <select id="type-filter">
+              <option value="선택하세요">선택하세요</option>
+              <option value="all">전체</option>
+              <!-- 유형 옵션들 -->
+            </select>
+          </div>
+          
+          <button id="start-button" class="start-button">학습 시작하기</button>
         </div>
-
-        <section id="question-container" class="question-section">
-            <!-- 문제가 여기에 동적으로 표시됩니다 -->
-        </section>
-
-        <div class="action-buttons">
-            <button id="submit-button">정답 제출</button>
+    
+        <!-- 퀴즈 화면 컨테이너 (기존 컨텐츠를 이 안으로 이동) -->
+        <div id="quiz-container" style="display: none;">
+          <!-- 기존 문제 풀이 관련 UI -->
+          <div id="question-counter">
+            <span id="current-number">0</span> / <span id="total-questions">0</span>
+          </div>
+          
+          <div id="question-container"></div>
+          <div id="result-container"></div>
+          
+          <div class="controls">
+            <button id="prev-button">이전</button>
+            <button id="submit-button">제출</button>
             <button id="show-answer-button">정답 보기</button>
-        </div>
-
-        <div id="result-container" class="result-section">
-            <!-- 결과가 여기에 표시됩니다 -->
+            <button id="next-button">다음</button>
+            <button id="reset-button">범위 재선택</button>
+          </div>
         </div>
     </main>
     
