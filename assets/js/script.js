@@ -29,19 +29,6 @@ function init() {
     isReviewMode = false;
     quizStarted = false;
     
-    // 상단 선택창 제거 (추가)
-    const topSelectors = document.querySelectorAll('.top-selectors');
-    if (topSelectors.length > 0) {
-        topSelectors.forEach(selector => selector.style.display = 'none');
-    }
-    
-    // 또는 직접 상단 요소 숨기기
-    const topChapterLabel = document.querySelector('body > header .장-selector');
-    const topTypeLabel = document.querySelector('body > header .유형-selector');
-    
-    if (topChapterLabel) topChapterLabel.style.display = 'none';
-    if (topTypeLabel) topTypeLabel.style.display = 'none';
-    
     // 선택 화면 표시, 문제 화면 숨김
     showSelectionScreen();
     
@@ -61,7 +48,7 @@ function init() {
     
     // 필터 적용 버튼 이벤트 리스너 수정
     document.getElementById('apply-filters').addEventListener('click', function() {
-        applyFilters(); // filterQuestions 대신 applyFilters 함수 호출
+        applyFilters();
     });
 }
 
@@ -74,7 +61,7 @@ function showSelectionScreen() {
     populateFilters();
 }
 
-// 필터 채우기 함수 수정
+// 하단 드롭다운 메뉴 채우기 함수 수정
 function populateFilters() {
     // 챕터 목록 추출
     const chapters = [...new Set(questions.map(q => q.chapter))].sort();
@@ -87,7 +74,7 @@ function populateFilters() {
         'essay': '서술형'
     };
     
-    // 챕터 드롭다운 옵션 생성 - 기본값 변경
+    // 챕터 드롭다운 옵션 생성
     chapterFilter.innerHTML = '';
     
     // 전체 옵션 추가
@@ -104,7 +91,7 @@ function populateFilters() {
         chapterFilter.appendChild(option);
     });
     
-    // 유형 드롭다운 옵션 생성 - 기본값 변경
+    // 유형 드롭다운 옵션 생성
     typeFilter.innerHTML = '';
     
     // 전체 옵션 추가
@@ -512,4 +499,38 @@ function returnToNormalMode() {
 }
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+    init();
+    
+    // 상단 선택창 제거 (더 강력한 방식으로)
+    // 헤더 영역의 모든 셀렉터 숨기기
+    const headerElements = document.querySelectorAll('body > header .장, body > header .유형');
+    headerElements.forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // 더 광범위한 선택자로 상단 선택창 숨기기
+    const allSelectors = document.querySelectorAll('body > header select, body > header label, header .selector-container');
+    allSelectors.forEach(el => {
+        if (el && el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    });
+    
+    // CSS로 강제 제거
+    const style = document.createElement('style');
+    style.textContent = `
+        body > header select,
+        body > header label,
+        body > header .selector-container,
+        body > header .장-selector,
+        body > header .유형-selector {
+            display: none !important;
+        }
+        
+        body > header {
+            margin-bottom: 30px;
+        }
+    `;
+    document.head.appendChild(style);
+});
