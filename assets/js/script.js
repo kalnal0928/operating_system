@@ -66,33 +66,64 @@ function showSelectionScreen() {
 
 // 필터 채우기 함수 (선택적 추가)
 function populateFilters() {
-    // 필터 UI 요소들을 숨김 처리
+    // 필터를 숨기지 않고 옵션을 채워넣는 방식으로 변경
+    
+    // 챕터 목록 추출 (question.js에서 고유한 챕터 목록 가져오기)
+    const chapters = [...new Set(questions.map(q => q.chapter))].sort();
+    
+    // 유형 목록 추출 
+    const types = [...new Set(questions.map(q => q.type))];
+    const typeLabels = {
+        'multiple-choice': '객관식',
+        'fill-in-blank': '주관식',
+        'essay': '서술형'
+    };
+    
+    // 챕터 드롭다운 옵션 생성
+    chapterFilter.innerHTML = '<option value="전체">전체</option>';
+    chapters.forEach(chapter => {
+        const option = document.createElement('option');
+        option.value = chapter;
+        option.textContent = chapter;
+        chapterFilter.appendChild(option);
+    });
+    
+    // 유형 드롭다운 옵션 생성
+    typeFilter.innerHTML = '<option value="전체">전체</option>';
+    types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = typeLabels[type] || type;
+        typeFilter.appendChild(option);
+    });
+    
+    // 필터 컨테이너 표시
     const filterContainer = document.querySelector('.filters');
     if (filterContainer) {
-        filterContainer.style.display = 'none';
+        filterContainer.style.display = 'block';
     }
     
-    // 또는 filterContainer가 없는 경우 직접 요소들을 찾아서 숨김
+    // 필터 라벨 표시
     const chapterFilterLabel = chapterFilter.parentElement;
     const typeFilterLabel = typeFilter.parentElement;
     
     if (chapterFilterLabel) {
-        chapterFilterLabel.style.display = 'none';
+        chapterFilterLabel.style.display = 'block';
     }
     
     if (typeFilterLabel) {
-        typeFilterLabel.style.display = 'none';
+        typeFilterLabel.style.display = 'block';
     }
 }
 
 // 퀴즈 시작 함수 (신규)
 function startQuiz() {
-    // 필터 검증 로직 제거 - 바로 모든 문제 적용
+    // 필터 적용
     applyFilters();
     
     // 필터링된 문제가 있는지 확인
     if (filteredQuestions.length === 0) {
-        alert('문제가 없습니다.');
+        alert('선택한 조건에 맞는 문제가 없습니다. 다른 조건을 선택해주세요.');
         return;
     }
     
@@ -121,14 +152,12 @@ function resetQuiz() {
 
 // 필터 적용 함수 수정 (이미지에 맞게 기본값 설정)
 function applyFilters() {
-    // 선택창은 삭제되어도 필터링은 계속 필요하므로
-    // 모든 장과 모든 유형을 기본값으로 설정
-    const chapterValue = 'all';
-    const typeValue = 'all';
+    const chapterValue = chapterFilter.value;
+    const typeValue = typeFilter.value;
     
     filteredQuestions = questions.filter(question => {
-        const chapterMatch = chapterValue === 'all' || question.chapter === chapterValue;
-        const typeMatch = typeValue === 'all' || question.type === typeValue;
+        const chapterMatch = chapterValue === '전체' || question.chapter === chapterValue;
+        const typeMatch = typeValue === '전체' || question.type === typeValue;
         return chapterMatch && typeMatch;
     });
     
@@ -476,29 +505,3 @@ function returnToNormalMode() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', init);
-
-// 질문 필터링 및 표시 로직 추가
-function filterQuestions(chapter, type) {
-    let filteredQuestions = questions;
-    
-    if (chapter !== '전체') {
-        filteredQuestions = filteredQuestions.filter(q => q.chapter === chapter);
-    }
-    
-    if (type !== '전체') {
-        filteredQuestions = filteredQuestions.filter(q => q.type === type);
-    }
-    
-    // 여기서 필터링된 질문을 표시하는 로직 구현
-    displayQuestions(filteredQuestions);
-}
-
-function displayQuestions(questionsToDisplay) {
-    // UI에 질문을 표시하는 코드
-    const questionsContainer = document.getElementById('questions-container');
-    questionsContainer.innerHTML = '';
-    
-    questionsToDisplay.forEach(q => {
-        // 각 질문을 HTML로 렌더링하는 코드
-    });
-}
