@@ -114,6 +114,66 @@ function populateFilters() {
         '챕터 목록': chapters,
         '유형 목록': types
     });
+    
+    // [중요] 드롭다운에 내용이 잘 채워졌는지 확인
+    if (chapterFilter.options.length <= 1) {
+        // 챕터 옵션이 제대로 추가되지 않았으면 직접 추가
+        const manualChapters = ["1장", "3장", "4장"];
+        manualChapters.forEach(chapter => {
+            if (!Array.from(chapterFilter.options).some(opt => opt.value === chapter)) {
+                const option = document.createElement('option');
+                option.value = chapter;
+                option.textContent = chapter;
+                chapterFilter.appendChild(option);
+            }
+        });
+    }
+    
+    if (typeFilter.options.length <= 1) {
+        // 유형 옵션이 제대로 추가되지 않았으면 직접 추가
+        const manualTypes = [
+            { value: 'multiple-choice', label: '객관식' },
+            { value: 'fill-in-blank', label: '주관식' },
+            { value: 'essay', label: '서술형' }
+        ];
+        
+        manualTypes.forEach(type => {
+            if (!Array.from(typeFilter.options).some(opt => opt.value === type.value)) {
+                const option = document.createElement('option');
+                option.value = type.value;
+                option.textContent = type.label;
+                typeFilter.appendChild(option);
+            }
+        });
+    }
+    
+    // 개발 환경에서 옵션이 표시되지 않을 때 강제로 옵션 표시
+    if (chapterFilter.style.display === 'none') {
+        chapterFilter.style.display = 'block';
+    }
+    
+    if (typeFilter.style.display === 'none') {
+        typeFilter.style.display = 'block';
+    }
+    
+    // 선택하세요 옵션을 전체로 변경
+    Array.from(chapterFilter.options).forEach(opt => {
+        if (opt.textContent === '선택하세요') {
+            opt.textContent = '전체';
+            opt.value = '전체';
+        }
+    });
+    
+    Array.from(typeFilter.options).forEach(opt => {
+        if (opt.textContent === '선택하세요') {
+            opt.textContent = '전체';
+            opt.value = '전체';
+        }
+    });
+    
+    // 초기값 설정
+    chapterFilter.value = '전체';
+    typeFilter.value = '전체';
 }
 
 // 퀴즈 시작 함수 (신규)
