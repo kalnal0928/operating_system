@@ -1,6 +1,6 @@
 import questions from './question.js';
 
-// DOM 요소 접근
+// DOM 요소 접근d
 const questionContainer = document.getElementById('question-container');
 const resultContainer = document.getElementById('result-container');
 const submitButton = document.getElementById('submit-button');
