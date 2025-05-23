@@ -116,29 +116,37 @@ function displayQuestion() {
 function displayMultipleChoiceQuestion(question) {
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
-    
+
     question.options.forEach((option, index) => {
         const optionLabel = document.createElement('label');
         optionLabel.className = 'option-label';
-        
+
         const input = document.createElement('input');
         input.type = 'radio';
         input.name = 'option';
         input.value = option;
         input.id = `option-${index}`;
-        
+
         // 라디오 버튼에 변경 이벤트 리스너 추가
         input.addEventListener('change', () => {
             if (input.checked) {
                 // 선택 즉시 정답 체크
                 const isCorrect = option === question.answer;
                 displayResult(isCorrect, option, question.answer);
-                
+
+                // 답변 기록 추가
+                answeredQuestions[currentQuestionIndex] = {
+                    index: currentQuestionIndex,
+                    isCorrect,
+                    userAnswer: option
+                };
+                checkAllAnswered();
+
                 // 모든 라디오 버튼 비활성화하여 추가 선택 방지
                 document.querySelectorAll('input[name="option"]').forEach(radio => {
                     radio.disabled = true;
                 });
-                
+
                 // 정답인 항목 강조
                 document.querySelectorAll('.option-label').forEach(label => {
                     const radioInput = label.querySelector('input[type="radio"]');
@@ -148,15 +156,15 @@ function displayMultipleChoiceQuestion(question) {
                 });
             }
         });
-        
+
         const labelText = document.createElement('span');
         labelText.textContent = option;
-        
+
         optionLabel.appendChild(input);
         optionLabel.appendChild(labelText);
         optionsContainer.appendChild(optionLabel);
     });
-    
+
     questionContainer.appendChild(optionsContainer);
 }
 
