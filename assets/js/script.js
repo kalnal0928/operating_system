@@ -15,6 +15,9 @@ const totalQuestionsElement = document.getElementById('total-questions');
 // 상태 변수
 let currentQuestionIndex = 0;
 let filteredQuestions = [...questions];
+let answeredQuestions = []; // {index, isCorrect, userAnswer}
+let reviewMode = false;     // 틀린 문제 다시 풀기 모드
+let wrongQuestions = [];    // 틀린 문제 배열
 
 // 초기화 함수
 function init() {
@@ -33,6 +36,8 @@ function init() {
 
 // 필터 적용
 function applyFilters() {
+    reviewMode = false;
+    answeredQuestions = [];
     const chapterValue = chapterFilter.value;
     const typeValue = typeFilter.value;
     
@@ -191,7 +196,7 @@ function handleSubmit() {
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     let userAnswer = '';
     let isCorrect = false;
-    
+
     switch (currentQuestion.type) {
         case 'multiple-choice':
             const selectedOption = document.querySelector('input[name="option"]:checked');
@@ -203,7 +208,7 @@ function handleSubmit() {
                 return;
             }
             break;
-            
+
         case 'fill-in-blank':
             const blankInput = document.querySelector('.blank-input');
             if (blankInput && blankInput.value.trim()) {
@@ -214,12 +219,15 @@ function handleSubmit() {
                 return;
             }
             break;
-            
+
         case 'essay':
             const essayInput = document.querySelector('.essay-input');
             if (essayInput && essayInput.value.trim()) {
                 userAnswer = essayInput.value.trim();
                 showMessage('서술형 문제가 제출되었습니다. 정답을 확인하세요.', 'info');
+                // 서술형은 정답 체크하지 않음
+                answeredQuestions[currentQuestionIndex] = { index: currentQuestionIndex, isCorrect: null, userAnswer };
+                checkAllAnswered();
                 return;
             } else {
                 showMessage('답변을 작성해주세요!', 'warning');
@@ -229,65 +237,94 @@ function handleSubmit() {
     
     // 결과 표시
     displayResult(isCorrect, userAnswer, currentQuestion.answer);
+
+    // 답변 기록
+    answeredQuestions[currentQuestionIndex] = { index: currentQuestionIndex, isCorrect, userAnswer };
+
+    // 모든 문제를 다 풀었는지 확인
+    checkAllAnswered();
 }
 
-// 결과 표시
-function displayResult(isCorrect, userAnswer, correctAnswer) {
-    resultContainer.innerHTML = '';
-    
-    const resultDiv = document.createElement('div');
-    resultDiv.className = isCorrect ? 'result correct' : 'result incorrect';
-    
-    const resultIcon = document.createElement('span');
-    resultIcon.className = 'result-icon';
-    resultIcon.textContent = isCorrect ? '✓' : '✗';
-    
-    const resultText = document.createElement('p');
-    resultText.className = 'result-text';
-    resultText.textContent = isCorrect 
-        ? '정답입니다!' 
-        : `오답입니다. 정답은 "${correctAnswer}" 입니다.`;
-    
-    resultDiv.appendChild(resultIcon);
-    resultDiv.appendChild(resultText);
-    resultContainer.appendChild(resultDiv);
-}
+// 모든 문제를 다 풀었는지 확인하고, 틀린 문제 다시 풀기 안내
+function checkAllAnswered() {
+    // 모든 문제에 대해 답변이 기록되어 있는지 확인
+    if (answeredQuestions.length === filteredQuestions.length &&
+        answeredQuestions.every(ans => ans !== undefined)) {
 
-// 정답 보기
-function showAnswer() {
-    const currentQuestion = filteredQuestions[currentQuestionIndex];
-    
-    resultContainer.innerHTML = '';
-    const answerDiv = document.createElement('div');
-    answerDiv.className = 'answer-reveal';
-    
-    const answerTitle = document.createElement('h3');
-    answerTitle.textContent = '정답:';
-    
-    const answerText = document.createElement('p');
-    answerText.textContent = currentQuestion.answer;
-    
-    answerDiv.appendChild(answerTitle);
-    answerDiv.appendChild(answerText);
-    resultContainer.appendChild(answerDiv);
-}
+        // 틀린 문제만 추출
+        wrongQuestions = answeredQuestions
+            .map((ans, idx) => ({ ...ans, question: filteredQuestions[idx] }))
+            .filter(ans => ans.isCorrect === false);
 
-// 이전 문제 표시
-function showPreviousQuestion() {
-    if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
-        updateQuestionCounter();
-        displayQuestion();
+        // 안내 메시지 및 버튼 표시
+        if (wrongQuestions.length > 0 && !reviewMode) {
+            resultContainer.innerHTML = `
+                <div class="message info">
+                    모든 문제를 풀었습니다.<br>
+                    틀린 문제만 다시 풀어보시겠습니까?
+                    <button id="retry-wrong-btn" style="margin-left:10px;">틀린 문제 다시 풀기</button>
+                </div>
+            `;
+            document.getElementById('retry-wrong-btn').onclick = startWrongReview;
+        } else if (wrongQuestions.length === 0 && !reviewMode) {
+            resultContainer.innerHTML = `
+                <div class="message correct">
+                    모든 문제를 맞췄습니다! 축하합니다!
+                </div>
+            `;
+        } else if (reviewMode && wrongQuestions.length === 0) {
+            resultContainer.innerHTML = `
+                <div class="message correct">
+                    틀린 문제도 모두 맞췄습니다! 잘하셨습니다!
+                </div>
+            `;
+        }
     }
 }
 
-// 다음 문제 표시
-function showNextQuestion() {
-    if (currentQuestionIndex < filteredQuestions.length - 1) {
-        currentQuestionIndex++;
-        updateQuestionCounter();
-        displayQuestion();
+// 틀린 문제만 다시 풀기 시작
+function startWrongReview() {
+    if (wrongQuestions.length === 0) return;
+    reviewMode = true;
+    // filteredQuestions를 틀린 문제로 교체
+    filteredQuestions = wrongQuestions.map(w => w.question);
+    currentQuestionIndex = 0;
+    answeredQuestions = [];
+    updateQuestionCounter();
+    displayQuestion();
+    showMessage('틀린 문제만 다시 풀어보세요!', 'info');
+}
+
+// 필터 적용 시 reviewMode 해제
+function applyFilters() {
+    reviewMode = false;
+    answeredQuestions = [];
+    const chapterValue = chapterFilter.value;
+    const typeValue = typeFilter.value;
+
+    filteredQuestions = questions.filter(question => {
+        const chapterMatch = chapterValue === 'all' || question.chapter === chapterValue;
+        const typeMatch = typeValue === 'all' || question.type === typeValue;
+        return chapterMatch && typeMatch;
+    });
+
+    // 필터링된 질문이 없을 경우 메시지 표시
+    if (filteredQuestions.length === 0) {
+        questionContainer.innerHTML = '<p class="no-questions">선택한 조건에 맞는 문제가 없습니다.</p>';
+        submitButton.disabled = true;
+        showAnswerButton.disabled = true;
+        prevButton.disabled = true;
+        nextButton.disabled = true;
+        return;
     }
+
+    // 새로운 필터가 적용되면 첫 번째 문제로 이동
+    currentQuestionIndex = 0;
+    updateQuestionCounter();
+    displayQuestion();
+
+    // 버튼 상태 업데이트
+    updateButtonStates();
 }
 
 // 버튼 상태 업데이트
