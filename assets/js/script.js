@@ -427,18 +427,7 @@ function returnToNormalMode() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 헤더에서는 제목만 남기고 모든 드롭박스 제거
-    cleanupHeader();
-    
-    // 하단에 새로운 드롭박스 생성
-    createNewDropdowns();
-    
-    // 기존 초기화 함수 호출 (드롭박스 관련 코드 제외)
-    init();
-});
-
-// 헤더 정리 함수 - 제목만 남기고 모든 드롭박스 제거
-function cleanupHeader() {
+    // 헤더의 모든 드롭박스 요소 제거
     const header = document.querySelector('header') || 
                   document.querySelector('.navbar') || 
                   document.querySelector('.header-area');
@@ -459,17 +448,19 @@ function cleanupHeader() {
         header.appendChild(newTitle);
     }
     
-    // 모든 상단 드롭박스 및 관련 요소 제거를 위한 CSS
+    // 모든 상단 드롭박스 관련 요소 숨기기
     const style = document.createElement('style');
     style.textContent = `
         body > header select,
         body > header .selector-container,
         body > header label,
+        body > header form,
+        body > header > *:not(h1):not(h2),
         body > .navbar select,
         body > .navbar .selector-container,
         body > .navbar label,
-        body > div:not(#selection-container) select,
-        body > div:not(#selection-container) label {
+        body > .navbar form,
+        body > .navbar > *:not(h1):not(h2) {
             display: none !important;
         }
         
@@ -477,49 +468,53 @@ function cleanupHeader() {
             padding: 20px 0;
             text-align: center;
             margin-bottom: 30px;
+            background-color: #343a40;
+            color: white;
         }
     `;
     document.head.appendChild(style);
-}
+    
+    // 하단에 새로운 선택 영역 생성
+    createSelectionArea();
+    
+    // 초기화 함수 호출
+    init();
+});
 
-// 하단에 새로운 드롭박스 생성 함수
-function createNewDropdowns() {
+// 하단에 선택 영역 생성 함수
+function createSelectionArea() {
     // 선택 컨테이너 찾기
     const selectionContainer = document.getElementById('selection-container');
     if (!selectionContainer) return;
     
-    // 기존 드롭다운 요소 참조 (이벤트 핸들러 연결을 위해)
-    const chapterFilterId = 'chapter-filter';
-    const typeFilterId = 'type-filter';
-    
-    // 출제 범위 및 유형 선택 영역 생성
-    const selectionArea = document.createElement('div');
-    selectionArea.className = 'selection-area';
-    selectionArea.innerHTML = `
-        <h2>출제 범위 및 유형 선택</h2>
-        
-        <div class="filter-group">
-            <label for="${chapterFilterId}">출제 범위:</label>
-            <select id="${chapterFilterId}" class="form-control">
-                <option value="전체">전체</option>
-                <option value="1장">1장</option>
-                <option value="3장">3장</option>
-                <option value="4장">4장</option>
-            </select>
+    // 선택 영역 생성
+    selectionContainer.innerHTML = `
+        <div class="selection-area">
+            <h2>출제 범위 및 유형 선택</h2>
+            
+            <div class="filter-group">
+                <label for="chapter-filter">출제 범위:</label>
+                <select id="chapter-filter" class="form-control">
+                    <option value="전체">전체</option>
+                    <option value="1장">1장</option>
+                    <option value="3장">3장</option>
+                    <option value="4장">4장</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="type-filter">문제 유형:</label>
+                <select id="type-filter" class="form-control">
+                    <option value="전체">전체</option>
+                    <option value="multiple-choice">객관식</option>
+                    <option value="fill-in-blank">주관식</option>
+                    <option value="essay">서술형</option>
+                </select>
+            </div>
+            
+            <button id="apply-filters" class="btn btn-primary">필터 적용</button>
+            <button id="start-button" class="btn btn-success">학습 시작하기</button>
         </div>
-        
-        <div class="filter-group">
-            <label for="${typeFilterId}">문제 유형:</label>
-            <select id="${typeFilterId}" class="form-control">
-                <option value="전체">전체</option>
-                <option value="multiple-choice">객관식</option>
-                <option value="fill-in-blank">주관식</option>
-                <option value="essay">서술형</option>
-            </select>
-        </div>
-        
-        <button id="apply-filters" class="btn btn-primary">필터 적용</button>
-        <button id="start-button" class="btn btn-success">학습 시작하기</button>
     `;
     
     // 스타일 추가
@@ -594,10 +589,6 @@ function createNewDropdowns() {
         }
     `;
     document.head.appendChild(style);
-    
-    // 기존 내용을 새 컨텐츠로 교체
-    selectionContainer.innerHTML = '';
-    selectionContainer.appendChild(selectionArea);
     
     // 이벤트 리스너 연결
     document.getElementById('apply-filters').addEventListener('click', applyFilters);
