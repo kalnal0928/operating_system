@@ -215,10 +215,9 @@ function displayFillInBlankQuestion(question) {
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
     
-    // 문제 텍스트를 빈칸으로 분할
-    const questionText = question.question;
-    // (_____) 형식의 빈칸을 찾아서 입력 필드로 변환
-    const formattedQuestion = questionText.replace(/\([^)]*\)/g, '<input type="text" class="blank-input" placeholder="정답 입력">');
+    // 언더바가 포함된 괄호만 입력 칸으로 변환
+    // (언더바가 하나 이상 포함된 괄호만 변환)
+    const formattedQuestion = question.question.replace(/\((?:_|\s)*_+(?:_|\s)*\)/g, '<input type="text" class="blank-input" placeholder="정답 입력">');
     
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
