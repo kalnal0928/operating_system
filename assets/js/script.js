@@ -215,13 +215,34 @@ function displayFillInBlankQuestion(question) {
     // 괄호 안에 언더바가 2개 이상 있을 때만 입력 칸으로 변환
     const formattedQuestion = question.question.replace(/\(([^)]*)\)/g, function(match, inner) {
         if ((inner.match(/_/g) || []).length >= 2) {
-            return '<input type="text" class="blank-input" placeholder="정답 입력">';
+            // 모바일 환경을 위한 속성 추가
+            return '<input type="text" class="blank-input" placeholder="정답 입력" inputmode="text" enterkeyhint="done">';
         }
         return match;
     });
 
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
+
+    // 입력 필드에 엔터키 이벤트 리스너 추가
+    const blankInput = document.querySelector('.blank-input');
+    if (blankInput) {
+        // 엔터키 이벤트
+        blankInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleSubmit();
+            }
+        });
+
+        // 모바일 환경을 위한 추가 이벤트
+        blankInput.addEventListener('blur', () => {
+            // 입력 필드에서 포커스가 벗어날 때 자동 제출 (선택적)
+            if (blankInput.value.trim() && !blankInput.disabled) {
+                handleSubmit();
+            }
+        });
+    }
 
     submitButton.style.display = 'block';
     showAnswerButton.style.display = 'block';
