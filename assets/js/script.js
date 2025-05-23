@@ -63,7 +63,7 @@ function showSelectionScreen() {
 
 // 하단 드롭다운 메뉴 채우기 함수 수정
 function populateFilters() {
-    // 챕터 목록 추출
+    // 챕터 목록 추출 - question.js 파일에서 모든 고유 챕터 값을 추출
     const chapters = [...new Set(questions.map(q => q.chapter))].sort();
     
     // 유형 목록 추출 
@@ -74,16 +74,16 @@ function populateFilters() {
         'essay': '서술형'
     };
     
-    // 챕터 드롭다운 옵션 생성
+    // 챕터 드롭다운 옵션 완전히 새로 생성
     chapterFilter.innerHTML = '';
     
-    // 전체 옵션 추가
+    // 전체 옵션 먼저 추가
     const allChapterOption = document.createElement('option');
     allChapterOption.value = "전체";
     allChapterOption.textContent = "전체";
     chapterFilter.appendChild(allChapterOption);
     
-    // 각 챕터 옵션 추가
+    // 각 챕터 옵션 추가 (모든 챕터를 명시적으로 추가)
     chapters.forEach(chapter => {
         const option = document.createElement('option');
         option.value = chapter;
@@ -91,21 +91,28 @@ function populateFilters() {
         chapterFilter.appendChild(option);
     });
     
-    // 유형 드롭다운 옵션 생성
+    // 유형 드롭다운 옵션 완전히 새로 생성
     typeFilter.innerHTML = '';
     
-    // 전체 옵션 추가
+    // 전체 옵션 먼저 추가
     const allTypeOption = document.createElement('option');
     allTypeOption.value = "전체";
     allTypeOption.textContent = "전체";
     typeFilter.appendChild(allTypeOption);
     
-    // 각 유형 옵션 추가
+    // 각 유형 옵션 추가 (모든 유형을 명시적으로 추가)
     types.forEach(type => {
         const option = document.createElement('option');
         option.value = type;
         option.textContent = typeLabels[type] || type;
         typeFilter.appendChild(option);
+    });
+    
+    console.log('필터 옵션 생성됨:', {
+        '챕터 개수': chapterFilter.options.length,
+        '유형 개수': typeFilter.options.length,
+        '챕터 목록': chapters,
+        '유형 목록': types
     });
 }
 
@@ -148,12 +155,16 @@ function applyFilters() {
     const chapterValue = chapterFilter.value;
     const typeValue = typeFilter.value;
     
+    console.log('필터 적용:', { chapter: chapterValue, type: typeValue });
+    
+    // 필터 로직 수정
     filteredQuestions = questions.filter(question => {
-        // "전체"인 경우 모든 항목 포함, 그 외에는 일치하는 항목만 포함
         const chapterMatch = chapterValue === "전체" || question.chapter === chapterValue;
         const typeMatch = typeValue === "전체" || question.type === typeValue;
         return chapterMatch && typeMatch;
     });
+    
+    console.log(`필터 적용 결과: ${filteredQuestions.length}개 문제 선택됨`);
     
     // 버튼 상태 업데이트
     updateButtonStates();
@@ -500,37 +511,37 @@ function returnToNormalMode() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    init();
-    
-    // 상단 선택창 제거 (더 강력한 방식으로)
-    // 헤더 영역의 모든 셀렉터 숨기기
-    const headerElements = document.querySelectorAll('body > header .장, body > header .유형');
-    headerElements.forEach(el => {
-        el.style.display = 'none';
-    });
-    
-    // 더 광범위한 선택자로 상단 선택창 숨기기
-    const allSelectors = document.querySelectorAll('body > header select, body > header label, header .selector-container');
-    allSelectors.forEach(el => {
-        if (el && el.parentNode) {
-            el.parentNode.removeChild(el);
+    // 1. 헤더 영역의 선택기 완전히 제거 (직접 DOM에서 삭제)
+    const headerArea = document.querySelector('body > .navbar, body > header');
+    if (headerArea) {
+        // 타이틀은 유지하고 나머지 요소만 삭제
+        const title = headerArea.querySelector('h1, h2');
+        headerArea.innerHTML = '';
+        if (title) {
+            headerArea.appendChild(title);
         }
-    });
+    }
     
-    // CSS로 강제 제거
+    // 2. CSS를 사용하여 강제로 숨김 처리
     const style = document.createElement('style');
-    style.textContent = `
+    style.innerHTML = `
         body > header select,
-        body > header label,
         body > header .selector-container,
-        body > header .장-selector,
-        body > header .유형-selector {
+        body > header .selector-group,
+        body > .navbar select,
+        body > .navbar .selector-container,
+        body > .navbar .selector-group,
+        body > header > *:not(h1):not(h2),
+        .top-selectors {
             display: none !important;
         }
         
-        body > header {
+        header h1, header h2 {
             margin-bottom: 30px;
         }
     `;
     document.head.appendChild(style);
+    
+    // 기존 초기화 함수 호출
+    init();
 });
