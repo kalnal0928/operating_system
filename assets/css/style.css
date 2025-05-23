@@ -317,3 +317,17 @@ footer {
         flex-direction: column;
     }
 }
+
+.controls {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: row !important;
+    }
+}
