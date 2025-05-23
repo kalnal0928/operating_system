@@ -133,33 +133,18 @@ function displayQuestion() {
     switch (currentQuestion.type) {
         case 'multiple-choice':
             displayMultipleChoiceQuestion(currentQuestion);
-            // 객관식일 때는 제출 버튼과 정답 보기 버튼을 완전히 제거
-            submitButton.remove();
-            showAnswerButton.remove();
+            submitButton.style.display = 'none';        // 제출 버튼 숨김
+            showAnswerButton.style.display = 'none';    // 정답 보기 버튼 숨김
             break;
         case 'fill-in-blank':
             displayFillInBlankQuestion(currentQuestion);
-            // 다른 문제 유형일 때는 버튼이 없다면 다시 추가
-            if (!document.getElementById('submit-button')) {
-                questionContainer.appendChild(submitButton);
-            }
-            if (!document.getElementById('show-answer-button')) {
-                questionContainer.appendChild(showAnswerButton);
-            }
-            submitButton.style.display = 'block';
-            showAnswerButton.style.display = 'block';
+            submitButton.style.display = 'block';        // 제출 버튼 표시
+            showAnswerButton.style.display = 'block';    // 정답 보기 버튼 표시
             break;
         case 'essay':
             displayEssayQuestion(currentQuestion);
-            // 다른 문제 유형일 때는 버튼이 없다면 다시 추가
-            if (!document.getElementById('submit-button')) {
-                questionContainer.appendChild(submitButton);
-            }
-            if (!document.getElementById('show-answer-button')) {
-                questionContainer.appendChild(showAnswerButton);
-            }
-            submitButton.style.display = 'block';
-            showAnswerButton.style.display = 'block';
+            submitButton.style.display = 'block';        // 제출 버튼 표시
+            showAnswerButton.style.display = 'block';    // 정답 보기 버튼 표시
             break;
     }
     
