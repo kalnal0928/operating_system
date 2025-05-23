@@ -69,11 +69,11 @@ function applyFilters() {
 // 문제 표시
 function displayQuestion() {
     if (filteredQuestions.length === 0) return;
-    
+
     const currentQuestion = filteredQuestions[currentQuestionIndex];
-    questionContainer.innerHTML = '';  // 컨테이너 초기화
-    resultContainer.innerHTML = '';    // 결과 컨테이너 초기화
-    
+    questionContainer.innerHTML = '';
+    resultContainer.innerHTML = '';
+
     // 문제 번호와 챕터 표시
     const questionMeta = document.createElement('div');
     questionMeta.className = 'question-meta';
@@ -108,6 +108,34 @@ function displayQuestion() {
             break;
     }
     
+    // 이미 답변한 문제라면 결과 표시
+    const answered = answeredQuestions[currentQuestionIndex];
+    if (answered && answered.userAnswer !== undefined) {
+        displayResult(answered.isCorrect, answered.userAnswer, currentQuestion.answer);
+        // 객관식은 라디오 버튼 비활성화 및 정답 강조
+        if (currentQuestion.type === 'multiple-choice') {
+            document.querySelectorAll('input[name="option"]').forEach(radio => {
+                radio.disabled = true;
+                if (radio.value === answered.userAnswer) radio.checked = true;
+            });
+            document.querySelectorAll('.option-label').forEach(label => {
+                const radioInput = label.querySelector('input[type="radio"]');
+                if (radioInput.value === currentQuestion.answer) {
+                    label.classList.add('correct-answer');
+                }
+            });
+        }
+        // 빈칸 채우기, 서술형도 입력값 복원
+        if (currentQuestion.type === 'fill-in-blank') {
+            const blankInput = document.querySelector('.blank-input');
+            if (blankInput) blankInput.value = answered.userAnswer;
+        }
+        if (currentQuestion.type === 'essay') {
+            const essayInput = document.querySelector('.essay-input');
+            if (essayInput) essayInput.value = answered.userAnswer;
+        }
+    }
+
     // 버튼 상태 업데이트
     updateButtonStates();
 }
@@ -294,10 +322,9 @@ function checkAllAnswered() {
 function startWrongReview() {
     if (wrongQuestions.length === 0) return;
     reviewMode = true;
-    // filteredQuestions를 틀린 문제로 교체
     filteredQuestions = wrongQuestions.map(w => w.question);
     currentQuestionIndex = 0;
-    answeredQuestions = new Array(filteredQuestions.length); // 인덱스 맞추기
+    answeredQuestions = Array(filteredQuestions.length).fill(undefined); // 완전 초기화
     updateQuestionCounter();
     displayQuestion();
     showMessage('틀린 문제만 다시 풀어보세요!', 'info');
