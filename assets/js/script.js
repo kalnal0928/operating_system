@@ -40,6 +40,9 @@ function init() {
     resetButton.addEventListener('click', resetQuiz);
     
     // 시작 버튼 이벤트 리스너 추가
+    console.log('startButton:', startButton);
+    console.log('selectionChapterFilter:', selectionChapterFilter);
+    console.log('selectionTypeFilter:', selectionTypeFilter);
     startButton.addEventListener('click', () => {
         // 필터 값 검증
         const selectedChapter = selectionChapterFilter.value;
@@ -464,7 +467,6 @@ function showMessage(message, type = 'info') {
 
 // 페이지 로드 시 초기화 수정
 document.addEventListener('DOMContentLoaded', function() {
-    // 초기화 함수 호출
     init();
     
     // 필터 변경 이벤트 리스너

@@ -52,10 +52,9 @@ main {
 
 .question-controls,
 .action-buttons {
-    display: flex;
-    flex-direction: row;
+    display: flex !important;
+    flex-direction: row !important;
     gap: 0.5rem;
-    justify-content: flex-start;
     align-items: center;
 }
 
@@ -314,7 +313,7 @@ footer {
     }
     
     .action-buttons {
-        flex-direction: column;
+        flex-direction: row !important;
     }
 }
 
