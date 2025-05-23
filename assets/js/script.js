@@ -164,31 +164,31 @@ function displayMultipleChoiceQuestion(question) {
 function displayFillInBlankQuestion(question) {
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
-    
+
     // 문제 텍스트를 빈칸으로 분할
     const questionText = question.question;
     const formattedQuestion = questionText.replace(/\(_+\)/g, '<input type="text" class="blank-input">');
-    
+
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
     submitButton.disabled = false;
-    showAnswerButton.disabled = false;
+    showAnswerButton.disabled = false; // <-- 여기서 false로 변경
 }
 
 // 서술형 문제 표시
 function displayEssayQuestion(question) {
     const essayContainer = document.createElement('div');
     essayContainer.className = 'essay-container';
-    
+
     const textarea = document.createElement('textarea');
     textarea.className = 'essay-input';
     textarea.rows = 6;
     textarea.placeholder = '답변을 작성하세요...';
-    
+
     essayContainer.appendChild(textarea);
     questionContainer.appendChild(essayContainer);
     submitButton.disabled = false;
-    showAnswerButton.disabled = false;
+    showAnswerButton.disabled = false; // <-- 여기서 false로 변경
 }
 
 // 정답 제출 처리
