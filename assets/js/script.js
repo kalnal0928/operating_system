@@ -29,6 +29,19 @@ function init() {
     isReviewMode = false;
     quizStarted = false;
     
+    // 상단 선택창 제거 (추가)
+    const topSelectors = document.querySelectorAll('.top-selectors');
+    if (topSelectors.length > 0) {
+        topSelectors.forEach(selector => selector.style.display = 'none');
+    }
+    
+    // 또는 직접 상단 요소 숨기기
+    const topChapterLabel = document.querySelector('body > header .장-selector');
+    const topTypeLabel = document.querySelector('body > header .유형-selector');
+    
+    if (topChapterLabel) topChapterLabel.style.display = 'none';
+    if (topTypeLabel) topTypeLabel.style.display = 'none';
+    
     // 선택 화면 표시, 문제 화면 숨김
     showSelectionScreen();
     
@@ -63,7 +76,7 @@ function showSelectionScreen() {
 
 // 필터 채우기 함수 수정
 function populateFilters() {
-    // 챕터 목록 추출 (question.js에서 고유한 챕터 목록 가져오기)
+    // 챕터 목록 추출
     const chapters = [...new Set(questions.map(q => q.chapter))].sort();
     
     // 유형 목록 추출 
@@ -74,8 +87,9 @@ function populateFilters() {
         'essay': '서술형'
     };
     
-    // 챕터 드롭다운 옵션 생성 - "선택하세요"를 기본값으로 설정
-    chapterFilter.innerHTML = '<option value="선택하세요">선택하세요</option>';
+    // 챕터 드롭다운 옵션 생성 - 기본값 변경
+    chapterFilter.innerHTML = '';
+    
     // 전체 옵션 추가
     const allChapterOption = document.createElement('option');
     allChapterOption.value = "전체";
@@ -90,8 +104,9 @@ function populateFilters() {
         chapterFilter.appendChild(option);
     });
     
-    // 유형 드롭다운 옵션 생성 - "선택하세요"를 기본값으로 설정
-    typeFilter.innerHTML = '<option value="선택하세요">선택하세요</option>';
+    // 유형 드롭다운 옵션 생성 - 기본값 변경
+    typeFilter.innerHTML = '';
+    
     // 전체 옵션 추가
     const allTypeOption = document.createElement('option');
     allTypeOption.value = "전체";
@@ -147,9 +162,9 @@ function applyFilters() {
     const typeValue = typeFilter.value;
     
     filteredQuestions = questions.filter(question => {
-        // "선택하세요"나 "전체"인 경우 필터링하지 않음
-        const chapterMatch = chapterValue === "선택하세요" || chapterValue === "전체" || question.chapter === chapterValue;
-        const typeMatch = typeValue === "선택하세요" || typeValue === "전체" || question.type === typeValue;
+        // "전체"인 경우 모든 항목 포함, 그 외에는 일치하는 항목만 포함
+        const chapterMatch = chapterValue === "전체" || question.chapter === chapterValue;
+        const typeMatch = typeValue === "전체" || question.type === typeValue;
         return chapterMatch && typeMatch;
     });
     
