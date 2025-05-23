@@ -210,17 +210,22 @@ function displayMultipleChoiceQuestion(question) {
     questionContainer.appendChild(optionsContainer);
 }
 
-// 빈칸 채우기 문제 표시
+// 빈칸 채우기 문제 표시 함수 수정
 function displayFillInBlankQuestion(question) {
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
     
     // 문제 텍스트를 빈칸으로 분할
     const questionText = question.question;
-    const formattedQuestion = questionText.replace(/\(_+\)/g, '<input type="text" class="blank-input">');
+    // (_____) 형식의 빈칸을 찾아서 입력 필드로 변환
+    const formattedQuestion = questionText.replace(/\([^)]*\)/g, '<input type="text" class="blank-input" placeholder="정답 입력">');
     
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
+    
+    // 제출 버튼과 정답 보기 버튼 활성화
+    submitButton.style.display = 'block';
+    showAnswerButton.style.display = 'block';
     submitButton.disabled = false;
     showAnswerButton.disabled = false;
 }
@@ -241,7 +246,7 @@ function displayEssayQuestion(question) {
     showAnswerButton.disabled = false;
 }
 
-// 정답 제출 처리
+// 정답 제출 처리 함수 수정
 function handleSubmit() {
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     let userAnswer = '';
@@ -263,7 +268,8 @@ function handleSubmit() {
             const blankInput = document.querySelector('.blank-input');
             if (blankInput && blankInput.value.trim()) {
                 userAnswer = blankInput.value.trim();
-                isCorrect = userAnswer === currentQuestion.answer;
+                // 정답 비교 시 대소문자 구분 없이 비교
+                isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toLowerCase();
             } else {
                 showMessage('빈칸을 채워주세요!', 'warning');
                 return;
@@ -284,6 +290,14 @@ function handleSubmit() {
     
     // 결과 표시
     displayResult(isCorrect, userAnswer, currentQuestion.answer);
+    
+    // 빈칸 채우기 문제의 경우 입력 필드 비활성화
+    if (currentQuestion.type === 'fill-in-blank') {
+        const blankInput = document.querySelector('.blank-input');
+        if (blankInput) {
+            blankInput.disabled = true;
+        }
+    }
 }
 
 // 결과 표시
