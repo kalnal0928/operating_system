@@ -37,9 +37,21 @@ function init() {
     showAnswerButton.addEventListener('click', showAnswer);
     prevButton.addEventListener('click', showPreviousQuestion);
     nextButton.addEventListener('click', showNextQuestion);
-    
-    // 리셋 버튼 이벤트 리스너
     resetButton.addEventListener('click', resetQuiz);
+    
+    // 시작 버튼 이벤트 리스너 추가
+    startButton.addEventListener('click', () => {
+        // 필터 값 검증
+        const selectedChapter = selectionChapterFilter.value;
+        const selectedType = selectionTypeFilter.value;
+        
+        if (selectedChapter === '선택하세요' || selectedType === '선택하세요') {
+            showMessage('출제 범위와 문제 유형을 모두 선택해주세요.', 'warning');
+            return;
+        }
+        
+        startQuiz();
+    });
 }
 
 // 선택 화면 표시 함수 (신규)
@@ -48,34 +60,36 @@ function showSelectionScreen() {
     quizContainer.style.display = 'none';
 }
 
-// 필터링 함수 추가
+// 필터링 함수 수정
 function filterQuestions() {
     const selectedChapter = selectionChapterFilter.value;
     const selectedType = selectionTypeFilter.value;
     
     // 모든 문제를 가져옴
-    filteredQuestions = [...questions];
+    let filtered = [...questions];
     
     // 챕터 필터링
-    if (selectedChapter !== 'all' && selectedChapter !== '선택하세요') {
-        filteredQuestions = filteredQuestions.filter(q => q.chapter === selectedChapter);
+    if (selectedChapter !== 'all') {
+        filtered = filtered.filter(q => q.chapter === selectedChapter);
     }
     
     // 유형 필터링
-    if (selectedType !== 'all' && selectedType !== '선택하세요') {
-        filteredQuestions = filteredQuestions.filter(q => q.type === selectedType);
+    if (selectedType !== 'all') {
+        filtered = filtered.filter(q => q.type === selectedType);
     }
     
     // 필터링된 문제가 있는지 확인
-    if (filteredQuestions.length === 0) {
+    if (filtered.length === 0) {
         showMessage('선택한 조건에 맞는 문제가 없습니다.', 'warning');
         return false;
     }
     
+    // 필터링된 문제 목록 저장
+    filteredQuestions = filtered;
     return true;
 }
 
-// startWithAllQuestions 함수를 startQuiz로 변경
+// startQuiz 함수 수정
 function startQuiz() {
     // 필터링 실행
     if (!filterQuestions()) {
@@ -437,11 +451,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 초기화 함수 호출
     init();
     
-    // 시작 버튼 이벤트 리스너
-    if (startButton) {
-        startButton.addEventListener('click', startQuiz);
-    }
-    
     // 필터 변경 이벤트 리스너
     if (selectionChapterFilter) {
         selectionChapterFilter.addEventListener('change', () => {
@@ -475,6 +484,11 @@ function resetQuiz() {
     isReviewMode = false;
     quizStarted = false;
     currentQuestionIndex = 0;
+    filteredQuestions = [];
+    
+    // 필터 초기화
+    selectionChapterFilter.value = '선택하세요';
+    selectionTypeFilter.value = '선택하세요';
     
     // 선택 화면으로 돌아가기
     showSelectionScreen();
