@@ -511,36 +511,77 @@ function returnToNormalMode() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. 헤더 영역의 선택기 완전히 제거 (직접 DOM에서 삭제)
-    const headerArea = document.querySelector('body > .navbar, body > header');
-    if (headerArea) {
-        // 타이틀은 유지하고 나머지 요소만 삭제
-        const title = headerArea.querySelector('h1, h2');
-        headerArea.innerHTML = '';
-        if (title) {
-            headerArea.appendChild(title);
-        }
-    }
-    
-    // 2. CSS를 사용하여 강제로 숨김 처리
-    const style = document.createElement('style');
-    style.innerHTML = `
-        body > header select,
-        body > header .selector-container,
-        body > header .selector-group,
-        body > .navbar select,
-        body > .navbar .selector-container,
-        body > .navbar .selector-group,
-        body > header > *:not(h1):not(h2),
-        .top-selectors {
-            display: none !important;
+    // 더 강력한 방식으로 헤더 영역 정리
+    function cleanupHeader() {
+        // 1. 헤더 요소 찾기 (여러 선택자로 시도)
+        const header = document.querySelector('header') || 
+                      document.querySelector('.navbar') || 
+                      document.querySelector('.header-area');
+                      
+        if (header) {
+            // 제목 요소 저장
+            const title = header.querySelector('h1') || header.querySelector('h2');
+            const titleText = title ? title.textContent : '2025 운영체제 기말';
+            
+            // 헤더 내용 지우기
+            header.innerHTML = '';
+            
+            // 제목만 다시 추가
+            const newTitle = document.createElement('h1');
+            newTitle.textContent = titleText;
+            newTitle.style.textAlign = 'center';
+            newTitle.style.padding = '20px 0';
+            header.appendChild(newTitle);
         }
         
-        header h1, header h2 {
-            margin-bottom: 30px;
-        }
-    `;
-    document.head.appendChild(style);
+        // 2. 상단에 있는 모든 select 요소 찾아서 제거 (더 직접적인 접근)
+        const topSelects = document.querySelectorAll('body > * select');
+        topSelects.forEach(select => {
+            // 하단 선택 영역의 select는 제외 (id로 구분)
+            if (select.id !== 'chapter-filter' && select.id !== 'type-filter') {
+                // 부모 요소까지 찾아가서 제거
+                const parent = select.parentElement;
+                if (parent) parent.style.display = 'none';
+                select.style.display = 'none';
+            }
+        });
+        
+        // 3. 강제 CSS 스타일 추가
+        const style = document.createElement('style');
+        style.textContent = `
+            /* 상단 영역의 선택기 요소 강제 숨김 */
+            body > header select,
+            body > header .selector-container,
+            body > header label,
+            body > header form,
+            body > .navbar select,
+            body > .navbar .selector-container,
+            body > .navbar label,
+            body > .navbar form,
+            body > div:not(#selection-container):not(#quiz-container) select,
+            body > div:not(#selection-container):not(#quiz-container) label {
+                display: none !important;
+            }
+            
+            /* 헤더 스타일 정리 */
+            header, .navbar {
+                padding: 20px 0;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            
+            /* 하단 선택기는 유지 */
+            #selection-container select,
+            #chapter-filter,
+            #type-filter {
+                display: block !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // 헤더 정리 함수 실행
+    cleanupHeader();
     
     // 기존 초기화 함수 호출
     init();
