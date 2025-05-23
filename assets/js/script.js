@@ -46,12 +46,9 @@ function init() {
     // 리셋 버튼 이벤트 리스너
     resetButton.addEventListener('click', resetQuiz);
     
-    // 필터 적용 버튼 이벤트 리스너 추가
+    // 필터 적용 버튼 이벤트 리스너 수정
     document.getElementById('apply-filters').addEventListener('click', function() {
-        const chapterValue = chapterFilter.value;
-        const typeValue = typeFilter.value;
-        
-        filterQuestions(chapterValue, typeValue);
+        applyFilters(); // filterQuestions 대신 applyFilters 함수 호출
     });
 }
 
@@ -64,10 +61,8 @@ function showSelectionScreen() {
     populateFilters();
 }
 
-// 필터 채우기 함수 (선택적 추가)
+// 필터 채우기 함수 수정
 function populateFilters() {
-    // 필터를 숨기지 않고 옵션을 채워넣는 방식으로 변경
-    
     // 챕터 목록 추출 (question.js에서 고유한 챕터 목록 가져오기)
     const chapters = [...new Set(questions.map(q => q.chapter))].sort();
     
@@ -79,8 +74,15 @@ function populateFilters() {
         'essay': '서술형'
     };
     
-    // 챕터 드롭다운 옵션 생성
-    chapterFilter.innerHTML = '<option value="전체">전체</option>';
+    // 챕터 드롭다운 옵션 생성 - "선택하세요"를 기본값으로 설정
+    chapterFilter.innerHTML = '<option value="선택하세요">선택하세요</option>';
+    // 전체 옵션 추가
+    const allChapterOption = document.createElement('option');
+    allChapterOption.value = "전체";
+    allChapterOption.textContent = "전체";
+    chapterFilter.appendChild(allChapterOption);
+    
+    // 각 챕터 옵션 추가
     chapters.forEach(chapter => {
         const option = document.createElement('option');
         option.value = chapter;
@@ -88,32 +90,21 @@ function populateFilters() {
         chapterFilter.appendChild(option);
     });
     
-    // 유형 드롭다운 옵션 생성
-    typeFilter.innerHTML = '<option value="전체">전체</option>';
+    // 유형 드롭다운 옵션 생성 - "선택하세요"를 기본값으로 설정
+    typeFilter.innerHTML = '<option value="선택하세요">선택하세요</option>';
+    // 전체 옵션 추가
+    const allTypeOption = document.createElement('option');
+    allTypeOption.value = "전체";
+    allTypeOption.textContent = "전체";
+    typeFilter.appendChild(allTypeOption);
+    
+    // 각 유형 옵션 추가
     types.forEach(type => {
         const option = document.createElement('option');
         option.value = type;
         option.textContent = typeLabels[type] || type;
         typeFilter.appendChild(option);
     });
-    
-    // 필터 컨테이너 표시
-    const filterContainer = document.querySelector('.filters');
-    if (filterContainer) {
-        filterContainer.style.display = 'block';
-    }
-    
-    // 필터 라벨 표시
-    const chapterFilterLabel = chapterFilter.parentElement;
-    const typeFilterLabel = typeFilter.parentElement;
-    
-    if (chapterFilterLabel) {
-        chapterFilterLabel.style.display = 'block';
-    }
-    
-    if (typeFilterLabel) {
-        typeFilterLabel.style.display = 'block';
-    }
 }
 
 // 퀴즈 시작 함수 (신규)
@@ -156,13 +147,15 @@ function applyFilters() {
     const typeValue = typeFilter.value;
     
     filteredQuestions = questions.filter(question => {
-        const chapterMatch = chapterValue === '전체' || question.chapter === chapterValue;
-        const typeMatch = typeValue === '전체' || question.type === typeValue;
+        // "선택하세요"나 "전체"인 경우 필터링하지 않음
+        const chapterMatch = chapterValue === "선택하세요" || chapterValue === "전체" || question.chapter === chapterValue;
+        const typeMatch = typeValue === "선택하세요" || typeValue === "전체" || question.type === typeValue;
         return chapterMatch && typeMatch;
     });
     
     // 버튼 상태 업데이트
     updateButtonStates();
+    updateQuestionCounter();
 }
 
 // 문제 표시
