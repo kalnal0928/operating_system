@@ -110,7 +110,7 @@ function displayQuestion() {
     updateButtonStates();
 }
 
-// 객관식 문제 표시 (수정됨)
+// 객관식 문제 표시 함수 수정
 function displayMultipleChoiceQuestion(question) {
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
@@ -144,6 +144,13 @@ function displayMultipleChoiceQuestion(question) {
                         label.classList.add('correct-answer');
                     }
                 });
+
+                // 마지막 문제인 경우 잠시 후 선택지 표시
+                if (currentQuestionIndex === filteredQuestions.length - 1) {
+                    setTimeout(() => {
+                        handleLastQuestion();
+                    }, 1500); // 1.5초 후 선택지 표시
+                }
             }
         });
         
@@ -298,29 +305,70 @@ function showPreviousQuestion() {
     }
 }
 
-// 다음 문제 표시
+// 다음 문제 표시 함수 수정
 function showNextQuestion() {
     if (currentQuestionIndex < filteredQuestions.length - 1) {
         currentQuestionIndex++;
         updateQuestionCounter();
         displayQuestion();
     } else {
-        // 마지막 문제인 경우 
-        if (!isReviewMode && incorrectQuestions.length > 0) {
-            // 오답 문제가 있으면 다시 풀기 버튼 표시
-            showReviewButton();
-        } else if (isReviewMode) {
-            // 오답 복습 모드에서 마지막 문제를 풀면 종료 메시지
-            showMessage('모든 오답 문제를 복습했습니다!', 'success');
-            // 일반 모드로 돌아가는 버튼 표시
-            showReturnToNormalButton();
-        } else {
-            // 모든 문제를 다 풀었고 오답도 없는 경우
-            showMessage('모든 문제를 완료했습니다!', 'success');
-            // 다시 선택 화면으로 돌아가는 버튼 표시
-            showResetButton();
-        }
+        // 마지막 문제를 풀었을 때 처리
+        handleLastQuestion();
     }
+}
+
+// 마지막 문제 처리 함수 추가
+function handleLastQuestion() {
+    // 틀린 문제가 있는지 확인
+    const hasIncorrectQuestions = incorrectQuestions.length > 0;
+    
+    // 결과 컨테이너 초기화
+    resultContainer.innerHTML = '';
+    
+    // 선택지를 보여주는 컨테이너 생성
+    const choiceContainer = document.createElement('div');
+    choiceContainer.className = 'choice-container';
+    
+    // 메시지 생성
+    const message = document.createElement('p');
+    message.className = 'message info';
+    message.textContent = '모든 문제를 풀었습니다.';
+    choiceContainer.appendChild(message);
+    
+    // 버튼 컨테이너 생성
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'action-buttons';
+    
+    // 틀린 문제가 있는 경우에만 오답 복습 버튼 표시
+    if (hasIncorrectQuestions) {
+        const reviewButton = document.createElement('button');
+        reviewButton.textContent = '틀린 문제 다시 풀기';
+        reviewButton.className = 'review-button';
+        reviewButton.addEventListener('click', () => {
+            // 오답 복습 모드로 전환
+            isReviewMode = true;
+            filteredQuestions = [...incorrectQuestions];
+            currentQuestionIndex = 0;
+            updateQuestionCounter();
+            displayQuestion();
+            choiceContainer.remove(); // 선택지 컨테이너 제거
+        });
+        buttonContainer.appendChild(reviewButton);
+    }
+    
+    // 새로운 범위 선택 버튼
+    const newRangeButton = document.createElement('button');
+    newRangeButton.textContent = '새로운 범위 선택하기';
+    newRangeButton.className = 'return-button';
+    newRangeButton.addEventListener('click', () => {
+        // 선택 화면으로 돌아가기
+        resetQuiz();
+        choiceContainer.remove(); // 선택지 컨테이너 제거
+    });
+    buttonContainer.appendChild(newRangeButton);
+    
+    choiceContainer.appendChild(buttonContainer);
+    resultContainer.appendChild(choiceContainer);
 }
 
 // 버튼 상태 업데이트
@@ -353,63 +401,14 @@ function showMessage(message, type = 'info') {
     }, 3000);
 }
 
-// 오답 복습 버튼 표시 함수 (신규)
-function showReviewButton() {
-    resultContainer.innerHTML = '';
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message info';
-    messageDiv.textContent = `모든 문제를 완료했습니다! 틀린 문제가 ${incorrectQuestions.length}개 있습니다.`;
-    
-    const reviewButton = document.createElement('button');
-    reviewButton.textContent = '틀린 문제 다시 풀기';
-    reviewButton.className = 'review-button';
-    reviewButton.addEventListener('click', startReviewMode);
-    
-    resultContainer.appendChild(messageDiv);
-    resultContainer.appendChild(reviewButton);
-}
-
-// 일반 모드로 돌아가는 버튼 표시 함수 (신규)
-function showReturnToNormalButton() {
-    const returnButton = document.createElement('button');
-    returnButton.textContent = '일반 모드로 돌아가기';
-    returnButton.className = 'return-button';
-    returnButton.addEventListener('click', returnToNormalMode);
-    
-    resultContainer.appendChild(returnButton);
-}
-
-// 오답 복습 모드 시작 함수 (신규)
-function startReviewMode() {
-    isReviewMode = true;
-    filteredQuestions = [...incorrectQuestions];
-    currentQuestionIndex = 0;
-    
-    // 복습 모드 시작 메시지
-    showMessage('오답 복습 모드를 시작합니다.', 'info');
-    
-    updateQuestionCounter();
-    displayQuestion();
-}
-
-// 일반 모드로 돌아가는 함수 (신규)
-function returnToNormalMode() {
-    isReviewMode = false;
-    incorrectQuestions = []; // 오답 목록 초기화
-    
-    // 원래 필터 상태로 복원하되 선택 화면으로 돌아가기
-    resetQuiz();
-}
-
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     // 초기화 함수 호출
     init();
     
     // 시작 버튼 이벤트 리스너
-    if (document.getElementById('start-button')) {
-        document.getElementById('start-button').addEventListener('click', startWithAllQuestions);
+    if (startButton) {
+        startButton.addEventListener('click', startWithAllQuestions);
     }
 });
 
@@ -434,4 +433,54 @@ function resetQuiz() {
     // 선택 화면으로 돌아가기
     showSelectionScreen();
 }
+
+// CSS 스타일 추가
+const style = document.createElement('style');
+style.textContent = `
+.choice-container {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.choice-container .message {
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+}
+
+.choice-container .action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.choice-container button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.choice-container .review-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.choice-container .review-button:hover {
+    background-color: #388E3C;
+}
+
+.choice-container .return-button {
+    background-color: #2196F3;
+    color: white;
+}
+
+.choice-container .return-button:hover {
+    background-color: #1976D2;
+}
+`;
+document.head.appendChild(style);
 
