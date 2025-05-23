@@ -15,9 +15,13 @@ const totalQuestionsElement = document.getElementById('total-questions');
 // 상태 변수
 let currentQuestionIndex = 0;
 let filteredQuestions = [...questions];
+let incorrectQuestions = []; // 틀린 문제 저장 배열
+let isReviewMode = false; // 오답 복습 모드 여부
 
 // 초기화 함수
 function init() {
+    incorrectQuestions = [];
+    isReviewMode = false;
     applyFilters();
     updateQuestionCounter();
     displayQuestion();
@@ -251,6 +255,20 @@ function displayResult(isCorrect, userAnswer, correctAnswer) {
     resultDiv.appendChild(resultIcon);
     resultDiv.appendChild(resultText);
     resultContainer.appendChild(resultDiv);
+    
+    // 틀린 문제 저장 (오답 복습 모드가 아닐 때만)
+    if (!isCorrect && !isReviewMode) {
+        // 이미 저장된 문제인지 확인
+        const currentQuestion = filteredQuestions[currentQuestionIndex];
+        const alreadySaved = incorrectQuestions.some(q => 
+            q.question === currentQuestion.question && 
+            q.chapter === currentQuestion.chapter
+        );
+        
+        if (!alreadySaved) {
+            incorrectQuestions.push(currentQuestion);
+        }
+    }
 }
 
 // 정답 보기
@@ -287,6 +305,17 @@ function showNextQuestion() {
         currentQuestionIndex++;
         updateQuestionCounter();
         displayQuestion();
+    } else {
+        // 마지막 문제인 경우 
+        if (!isReviewMode && incorrectQuestions.length > 0) {
+            // 오답 문제가 있으면 다시 풀기 버튼 표시
+            showReviewButton();
+        } else if (isReviewMode) {
+            // 오답 복습 모드에서 마지막 문제를 풀면 종료 메시지
+            showMessage('모든 오답 문제를 복습했습니다!', 'success');
+            // 일반 모드로 돌아가는 버튼 표시
+            showReturnToNormalButton();
+        }
     }
 }
 
@@ -318,6 +347,54 @@ function showMessage(message, type = 'info') {
             resultContainer.removeChild(messageDiv);
         }
     }, 3000);
+}
+
+// 오답 복습 버튼 표시 함수 (신규)
+function showReviewButton() {
+    resultContainer.innerHTML = '';
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message info';
+    messageDiv.textContent = `모든 문제를 완료했습니다! 틀린 문제가 ${incorrectQuestions.length}개 있습니다.`;
+    
+    const reviewButton = document.createElement('button');
+    reviewButton.textContent = '틀린 문제 다시 풀기';
+    reviewButton.className = 'review-button';
+    reviewButton.addEventListener('click', startReviewMode);
+    
+    resultContainer.appendChild(messageDiv);
+    resultContainer.appendChild(reviewButton);
+}
+
+// 일반 모드로 돌아가는 버튼 표시 함수 (신규)
+function showReturnToNormalButton() {
+    const returnButton = document.createElement('button');
+    returnButton.textContent = '일반 모드로 돌아가기';
+    returnButton.className = 'return-button';
+    returnButton.addEventListener('click', returnToNormalMode);
+    
+    resultContainer.appendChild(returnButton);
+}
+
+// 오답 복습 모드 시작 함수 (신규)
+function startReviewMode() {
+    isReviewMode = true;
+    filteredQuestions = [...incorrectQuestions];
+    currentQuestionIndex = 0;
+    
+    // 복습 모드 시작 메시지
+    showMessage('오답 복습 모드를 시작합니다.', 'info');
+    
+    updateQuestionCounter();
+    displayQuestion();
+}
+
+// 일반 모드로 돌아가는 함수 (신규)
+function returnToNormalMode() {
+    isReviewMode = false;
+    // 원래 필터 상태로 복원
+    applyFilters();
+    showMessage('일반 모드로 돌아왔습니다.', 'info');
 }
 
 // 페이지 로드 시 초기화
