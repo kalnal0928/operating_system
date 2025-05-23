@@ -66,27 +66,33 @@ function showSelectionScreen() {
 
 // 필터 채우기 함수 (선택적 추가)
 function populateFilters() {
-    // 이미 HTML에 고정된 필터 옵션이 있다면 이 함수는 필요 없음
-    // 필요한 경우 question.js에서 고유한 챕터와 유형 목록을 추출해서 필터 옵션 생성
+    // 필터 UI 요소들을 숨김 처리
+    const filterContainer = document.querySelector('.filters');
+    if (filterContainer) {
+        filterContainer.style.display = 'none';
+    }
+    
+    // 또는 filterContainer가 없는 경우 직접 요소들을 찾아서 숨김
+    const chapterFilterLabel = chapterFilter.parentElement;
+    const typeFilterLabel = typeFilter.parentElement;
+    
+    if (chapterFilterLabel) {
+        chapterFilterLabel.style.display = 'none';
+    }
+    
+    if (typeFilterLabel) {
+        typeFilterLabel.style.display = 'none';
+    }
 }
 
 // 퀴즈 시작 함수 (신규)
 function startQuiz() {
-    const chapterValue = chapterFilter.value;
-    const typeValue = typeFilter.value;
-    
-    // 필터 값 검증
-    if (chapterValue === '선택하세요' || typeValue === '선택하세요') {
-        alert('출제 범위와 유형을 모두 선택해주세요.');
-        return;
-    }
-    
-    // 필터 적용
+    // 필터 검증 로직 제거 - 바로 모든 문제 적용
     applyFilters();
     
     // 필터링된 문제가 있는지 확인
     if (filteredQuestions.length === 0) {
-        alert('선택한 조건에 맞는 문제가 없습니다. 다른 조건을 선택해주세요.');
+        alert('문제가 없습니다.');
         return;
     }
     
@@ -113,10 +119,12 @@ function resetQuiz() {
     showSelectionScreen();
 }
 
-// 필터 적용 함수 수정 (이벤트 핸들러에서 일반 함수로 변경)
+// 필터 적용 함수 수정 (이미지에 맞게 기본값 설정)
 function applyFilters() {
-    const chapterValue = chapterFilter.value;
-    const typeValue = typeFilter.value;
+    // 선택창은 삭제되어도 필터링은 계속 필요하므로
+    // 모든 장과 모든 유형을 기본값으로 설정
+    const chapterValue = 'all';
+    const typeValue = 'all';
     
     filteredQuestions = questions.filter(question => {
         const chapterMatch = chapterValue === 'all' || question.chapter === chapterValue;
