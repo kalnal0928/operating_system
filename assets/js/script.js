@@ -330,38 +330,6 @@ function startWrongReview() {
     showMessage('틀린 문제만 다시 풀어보세요!', 'info');
 }
 
-// 필터 적용 시 reviewMode 해제
-function applyFilters() {
-    reviewMode = false;
-    answeredQuestions = [];
-    const chapterValue = chapterFilter.value;
-    const typeValue = typeFilter.value;
-
-    filteredQuestions = questions.filter(question => {
-        const chapterMatch = chapterValue === 'all' || question.chapter === chapterValue;
-        const typeMatch = typeValue === 'all' || question.type === typeValue;
-        return chapterMatch && typeMatch;
-    });
-
-    // 필터링된 질문이 없을 경우 메시지 표시
-    if (filteredQuestions.length === 0) {
-        questionContainer.innerHTML = '<p class="no-questions">선택한 조건에 맞는 문제가 없습니다.</p>';
-        submitButton.disabled = true;
-        showAnswerButton.disabled = true;
-        prevButton.disabled = true;
-        nextButton.disabled = true;
-        return;
-    }
-
-    // 새로운 필터가 적용되면 첫 번째 문제로 이동
-    currentQuestionIndex = 0;
-    updateQuestionCounter();
-    displayQuestion();
-
-    // 버튼 상태 업데이트
-    updateButtonStates();
-}
-
 // 버튼 상태 업데이트
 function updateButtonStates() {
     prevButton.disabled = currentQuestionIndex === 0;
