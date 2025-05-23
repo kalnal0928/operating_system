@@ -85,12 +85,21 @@ function displayQuestion() {
     switch (currentQuestion.type) {
         case 'multiple-choice':
             displayMultipleChoiceQuestion(currentQuestion);
+            // 객관식일 때는 버튼 숨기기
+            submitButton.style.display = 'none';
+            showAnswerButton.style.display = 'none';
             break;
         case 'fill-in-blank':
             displayFillInBlankQuestion(currentQuestion);
+            // 다른 문제 유형일 때는 버튼 표시
+            submitButton.style.display = 'block';
+            showAnswerButton.style.display = 'block';
             break;
         case 'essay':
             displayEssayQuestion(currentQuestion);
+            // 다른 문제 유형일 때는 버튼 표시
+            submitButton.style.display = 'block';
+            showAnswerButton.style.display = 'block';
             break;
     }
     
@@ -98,7 +107,7 @@ function displayQuestion() {
     updateButtonStates();
 }
 
-// 객관식 문제 표시
+// 객관식 문제 표시 (수정됨)
 function displayMultipleChoiceQuestion(question) {
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
@@ -113,6 +122,28 @@ function displayMultipleChoiceQuestion(question) {
         input.value = option;
         input.id = `option-${index}`;
         
+        // 라디오 버튼에 변경 이벤트 리스너 추가
+        input.addEventListener('change', () => {
+            if (input.checked) {
+                // 선택 즉시 정답 체크
+                const isCorrect = option === question.answer;
+                displayResult(isCorrect, option, question.answer);
+                
+                // 모든 라디오 버튼 비활성화하여 추가 선택 방지
+                document.querySelectorAll('input[name="option"]').forEach(radio => {
+                    radio.disabled = true;
+                });
+                
+                // 정답인 항목 강조
+                document.querySelectorAll('.option-label').forEach(label => {
+                    const radioInput = label.querySelector('input[type="radio"]');
+                    if (radioInput.value === question.answer) {
+                        label.classList.add('correct-answer');
+                    }
+                });
+            }
+        });
+        
         const labelText = document.createElement('span');
         labelText.textContent = option;
         
@@ -122,8 +153,6 @@ function displayMultipleChoiceQuestion(question) {
     });
     
     questionContainer.appendChild(optionsContainer);
-    submitButton.disabled = false;
-    showAnswerButton.disabled = false;
 }
 
 // 빈칸 채우기 문제 표시

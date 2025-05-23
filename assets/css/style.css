@@ -121,6 +121,13 @@ button:disabled {
     background-color: #f8f9fa;
 }
 
+/* 정답 강조 스타일 */
+.option-label.correct-answer {
+    background-color: rgba(76, 175, 80, 0.2);
+    border-color: #4CAF50;
+    font-weight: bold;
+}
+
 .fill-blank-container {
     margin: 1rem 0;
 }
