@@ -61,29 +61,21 @@ function showSelectionScreen() {
     populateFilters();
 }
 
-// 하단 드롭다운 메뉴 채우기 함수 수정
+// 드롭다운 메뉴 수정 함수
 function populateFilters() {
-    // 챕터 목록 추출 - question.js 파일에서 모든 고유 챕터 값을 추출
-    const chapters = [...new Set(questions.map(q => q.chapter))].sort();
+    // 1. 옵션이 선택하세요로만 표시되는 문제 해결
     
-    // 유형 목록 추출 
-    const types = [...new Set(questions.map(q => q.type))];
-    const typeLabels = {
-        'multiple-choice': '객관식',
-        'fill-in-blank': '주관식',
-        'essay': '서술형'
-    };
-    
-    // 챕터 드롭다운 옵션 완전히 새로 생성
+    // 챕터 드롭다운 완전히 새로 생성
     chapterFilter.innerHTML = '';
     
-    // 전체 옵션 먼저 추가
+    // 전체 옵션 추가
     const allChapterOption = document.createElement('option');
     allChapterOption.value = "전체";
     allChapterOption.textContent = "전체";
     chapterFilter.appendChild(allChapterOption);
     
-    // 각 챕터 옵션 추가 (모든 챕터를 명시적으로 추가)
+    // 수동으로 챕터 옵션 추가 (항상 이 옵션들이 표시되도록)
+    const chapters = ["1장", "3장", "4장"];
     chapters.forEach(chapter => {
         const option = document.createElement('option');
         option.value = chapter;
@@ -91,72 +83,36 @@ function populateFilters() {
         chapterFilter.appendChild(option);
     });
     
-    // 유형 드롭다운 옵션 완전히 새로 생성
+    // 유형 드롭다운 완전히 새로 생성
     typeFilter.innerHTML = '';
     
-    // 전체 옵션 먼저 추가
+    // 전체 옵션 추가
     const allTypeOption = document.createElement('option');
     allTypeOption.value = "전체";
     allTypeOption.textContent = "전체";
     typeFilter.appendChild(allTypeOption);
     
-    // 각 유형 옵션 추가 (모든 유형을 명시적으로 추가)
+    // 수동으로 유형 옵션 추가 (항상 이 옵션들이 표시되도록)
+    const types = [
+        { value: 'multiple-choice', label: '객관식' },
+        { value: 'fill-in-blank', label: '주관식' },
+        { value: 'essay', label: '서술형' }
+    ];
+    
     types.forEach(type => {
         const option = document.createElement('option');
-        option.value = type;
-        option.textContent = typeLabels[type] || type;
+        option.value = type.value;
+        option.textContent = type.label;
         typeFilter.appendChild(option);
     });
     
-    console.log('필터 옵션 생성됨:', {
-        '챕터 개수': chapterFilter.options.length,
-        '유형 개수': typeFilter.options.length,
-        '챕터 목록': chapters,
-        '유형 목록': types
+    // 개발 환경에서 디버깅 로그
+    console.log('드롭다운 옵션 생성됨:', {
+        '챕터 옵션 수': chapterFilter.options.length,
+        '유형 옵션 수': typeFilter.options.length
     });
     
-    // [중요] 드롭다운에 내용이 잘 채워졌는지 확인
-    if (chapterFilter.options.length <= 1) {
-        // 챕터 옵션이 제대로 추가되지 않았으면 직접 추가
-        const manualChapters = ["1장", "3장", "4장"];
-        manualChapters.forEach(chapter => {
-            if (!Array.from(chapterFilter.options).some(opt => opt.value === chapter)) {
-                const option = document.createElement('option');
-                option.value = chapter;
-                option.textContent = chapter;
-                chapterFilter.appendChild(option);
-            }
-        });
-    }
-    
-    if (typeFilter.options.length <= 1) {
-        // 유형 옵션이 제대로 추가되지 않았으면 직접 추가
-        const manualTypes = [
-            { value: 'multiple-choice', label: '객관식' },
-            { value: 'fill-in-blank', label: '주관식' },
-            { value: 'essay', label: '서술형' }
-        ];
-        
-        manualTypes.forEach(type => {
-            if (!Array.from(typeFilter.options).some(opt => opt.value === type.value)) {
-                const option = document.createElement('option');
-                option.value = type.value;
-                option.textContent = type.label;
-                typeFilter.appendChild(option);
-            }
-        });
-    }
-    
-    // 개발 환경에서 옵션이 표시되지 않을 때 강제로 옵션 표시
-    if (chapterFilter.style.display === 'none') {
-        chapterFilter.style.display = 'block';
-    }
-    
-    if (typeFilter.style.display === 'none') {
-        typeFilter.style.display = 'block';
-    }
-    
-    // 선택하세요 옵션을 전체로 변경
+    // 2. 선택하세요 옵션이 있으면 전체로 변경
     Array.from(chapterFilter.options).forEach(opt => {
         if (opt.textContent === '선택하세요') {
             opt.textContent = '전체';
@@ -171,9 +127,105 @@ function populateFilters() {
         }
     });
     
-    // 초기값 설정
+    // 3. CSS로 드롭다운 항목 강제 표시
+    const style = document.createElement('style');
+    style.textContent = `
+        #chapter-filter option, #type-filter option {
+            display: block !important;
+        }
+        
+        /* 드롭다운 스타일 개선 */
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        
+        /* 드롭다운 옵션 스타일 */
+        option {
+            padding: 8px;
+        }
+        
+        /* 드롭다운 활성화 시 스타일 */
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 4. 초기값 설정
     chapterFilter.value = '전체';
     typeFilter.value = '전체';
+    
+    // 5. 이벤트 리스너 추가 (변경 시 드롭다운 메뉴 항목 체크)
+    chapterFilter.addEventListener('click', validateDropdownOptions);
+    typeFilter.addEventListener('click', validateDropdownOptions);
+}
+
+// 드롭다운 옵션 유효성 검사 - 필요시 옵션 다시 추가
+function validateDropdownOptions() {
+    // 챕터 옵션 확인
+    if (chapterFilter.options.length < 4) { // 전체 + 3 장
+        console.warn('챕터 옵션이 누락되었습니다. 다시 추가합니다.');
+        
+        // 현재 옵션 보존
+        const currentValue = chapterFilter.value;
+        
+        // 옵션 새로 생성
+        chapterFilter.innerHTML = '';
+        
+        // 전체 옵션
+        const allChapterOption = document.createElement('option');
+        allChapterOption.value = "전체";
+        allChapterOption.textContent = "전체";
+        chapterFilter.appendChild(allChapterOption);
+        
+        // 각 장 옵션
+        ["1장", "3장", "4장"].forEach(chapter => {
+            const option = document.createElement('option');
+            option.value = chapter;
+            option.textContent = chapter;
+            chapterFilter.appendChild(option);
+        });
+        
+        // 기존 값 복원
+        chapterFilter.value = currentValue;
+    }
+    
+    // 유형 옵션 확인
+    if (typeFilter.options.length < 4) { // 전체 + 3 유형
+        console.warn('유형 옵션이 누락되었습니다. 다시 추가합니다.');
+        
+        // 현재 옵션 보존
+        const currentValue = typeFilter.value;
+        
+        // 옵션 새로 생성
+        typeFilter.innerHTML = '';
+        
+        // 전체 옵션
+        const allTypeOption = document.createElement('option');
+        allTypeOption.value = "전체";
+        allTypeOption.textContent = "전체";
+        typeFilter.appendChild(allTypeOption);
+        
+        // 각 유형 옵션
+        [
+            { value: 'multiple-choice', label: '객관식' },
+            { value: 'fill-in-blank', label: '주관식' },
+            { value: 'essay', label: '서술형' }
+        ].forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.value;
+            option.textContent = type.label;
+            typeFilter.appendChild(option);
+        });
+        
+        // 기존 값 복원
+        typeFilter.value = currentValue;
+    }
 }
 
 // 퀴즈 시작 함수 (신규)
