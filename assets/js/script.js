@@ -45,6 +45,14 @@ function init() {
     
     // 리셋 버튼 이벤트 리스너
     resetButton.addEventListener('click', resetQuiz);
+    
+    // 필터 적용 버튼 이벤트 리스너 추가
+    document.getElementById('apply-filters').addEventListener('click', function() {
+        const chapterValue = chapterFilter.value;
+        const typeValue = typeFilter.value;
+        
+        filterQuestions(chapterValue, typeValue);
+    });
 }
 
 // 선택 화면 표시 함수 (신규)
@@ -460,3 +468,29 @@ function returnToNormalMode() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', init);
+
+// 질문 필터링 및 표시 로직 추가
+function filterQuestions(chapter, type) {
+    let filteredQuestions = questions;
+    
+    if (chapter !== '전체') {
+        filteredQuestions = filteredQuestions.filter(q => q.chapter === chapter);
+    }
+    
+    if (type !== '전체') {
+        filteredQuestions = filteredQuestions.filter(q => q.type === type);
+    }
+    
+    // 여기서 필터링된 질문을 표시하는 로직 구현
+    displayQuestions(filteredQuestions);
+}
+
+function displayQuestions(questionsToDisplay) {
+    // UI에 질문을 표시하는 코드
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = '';
+    
+    questionsToDisplay.forEach(q => {
+        // 각 질문을 HTML로 렌더링하는 코드
+    });
+}
