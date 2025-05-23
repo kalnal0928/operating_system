@@ -13,6 +13,8 @@ const selectionContainer = document.getElementById('selection-container'); // �
 const startButton = document.getElementById('start-button'); // 새로 추가
 const quizContainer = document.getElementById('quiz-container'); // 새로 추가
 const resetButton = document.getElementById('reset-button'); // 새로 추가
+const selectionChapterFilter = document.getElementById('selection-chapter-filter');
+const selectionTypeFilter = document.getElementById('selection-type-filter');
 
 // 상태 변수
 let currentQuestionIndex = 0;
@@ -46,10 +48,39 @@ function showSelectionScreen() {
     quizContainer.style.display = 'none';
 }
 
-// 필터링 없이 모든 문제 선택
-function startWithAllQuestions() {
-    // 모든 문제 선택
+// 필터링 함수 추가
+function filterQuestions() {
+    const selectedChapter = selectionChapterFilter.value;
+    const selectedType = selectionTypeFilter.value;
+    
+    // 모든 문제를 가져옴
     filteredQuestions = [...questions];
+    
+    // 챕터 필터링
+    if (selectedChapter !== 'all' && selectedChapter !== '선택하세요') {
+        filteredQuestions = filteredQuestions.filter(q => q.chapter === selectedChapter);
+    }
+    
+    // 유형 필터링
+    if (selectedType !== 'all' && selectedType !== '선택하세요') {
+        filteredQuestions = filteredQuestions.filter(q => q.type === selectedType);
+    }
+    
+    // 필터링된 문제가 있는지 확인
+    if (filteredQuestions.length === 0) {
+        showMessage('선택한 조건에 맞는 문제가 없습니다.', 'warning');
+        return false;
+    }
+    
+    return true;
+}
+
+// startWithAllQuestions 함수를 startQuiz로 변경
+function startQuiz() {
+    // 필터링 실행
+    if (!filterQuestions()) {
+        return;
+    }
     
     // 퀴즈 시작 상태로 변경
     quizStarted = true;
@@ -401,14 +432,29 @@ function showMessage(message, type = 'info') {
     }, 3000);
 }
 
-// 페이지 로드 시 초기화
+// 페이지 로드 시 초기화 수정
 document.addEventListener('DOMContentLoaded', function() {
     // 초기화 함수 호출
     init();
     
     // 시작 버튼 이벤트 리스너
     if (startButton) {
-        startButton.addEventListener('click', startWithAllQuestions);
+        startButton.addEventListener('click', startQuiz);
+    }
+    
+    // 필터 변경 이벤트 리스너
+    if (selectionChapterFilter) {
+        selectionChapterFilter.addEventListener('change', () => {
+            // 필터가 변경될 때마다 문제 수 업데이트
+            filterQuestions();
+        });
+    }
+    
+    if (selectionTypeFilter) {
+        selectionTypeFilter.addEventListener('change', () => {
+            // 필터가 변경될 때마다 문제 수 업데이트
+            filterQuestions();
+        });
     }
 });
 
