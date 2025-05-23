@@ -214,21 +214,18 @@ function displayMultipleChoiceQuestion(question) {
 function displayFillInBlankQuestion(question) {
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
-    
+
     // 괄호 안에 언더바가 2개 이상 있을 때만 입력 칸으로 변환
-    const formattedQuestion = question.question.replace(/\(([^)]*_+[^)]*)\)/g, function(match) {
-        // 괄호 안에 언더바가 2개 이상 있는 경우만 변환
-        const inner = match.slice(1, -1);
+    const formattedQuestion = question.question.replace(/\(([^)]*)\)/g, function(match, inner) {
         if ((inner.match(/_/g) || []).length >= 2) {
             return '<input type="text" class="blank-input" placeholder="정답 입력">';
         }
         return match;
     });
-    
+
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
-    
-    // 제출 버튼과 정답 보기 버튼 활성화
+
     submitButton.style.display = 'block';
     showAnswerButton.style.display = 'block';
     submitButton.disabled = false;
