@@ -360,3 +360,7 @@ footer {
         flex-direction: row !important;
     }
 }
+
+.submit-button {
+    display: none !important;
+}
