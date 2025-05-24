@@ -69,12 +69,12 @@ function filterQuestions() {
     let filtered = [...questions];
     
     // 챕터 필터링
-    if (selectedChapter !== 'all') {
+    if (selectedChapter !== 'all' && selectedChapter !== '선택하세요') {
         filtered = filtered.filter(q => q.chapter === selectedChapter);
     }
     
     // 유형 필터링
-    if (selectedType !== 'all') {
+    if (selectedType !== 'all' && selectedType !== '선택하세요') {
         filtered = filtered.filter(q => q.type === selectedType);
     }
     
@@ -84,7 +84,13 @@ function filterQuestions() {
         return false;
     }
     
-    // 필터링된 문제 목록 저장
+    // Fisher-Yates 알고리즘을 사용하여 배열을 무작위로 섞기
+    for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+    }
+    
+    // 필터링되고 섞인 문제 목록 저장
     filteredQuestions = filtered;
     return true;
 }
