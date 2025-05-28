@@ -304,8 +304,15 @@ function handleSubmit() {
             const blankInput = document.querySelector('.blank-input');
             if (blankInput && blankInput.value.trim()) {
                 userAnswer = blankInput.value.trim();
-                // 배열 형태의 정답 처리를 위해 checkAnswer 함수 사용
-                isCorrect = checkAnswer(userAnswer, currentQuestion.answer);
+                
+                // 정답이 배열인지 확인하고 그에 맞게 처리
+                if (Array.isArray(currentQuestion.answer)) {
+                    isCorrect = currentQuestion.answer.some(answer => 
+                        userAnswer.trim().toLowerCase() === answer.trim().toLowerCase()
+                    );
+                } else {
+                    isCorrect = userAnswer.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase();
+                }
             } else {
                 showMessage('빈칸을 채워주세요!', 'warning');
                 return;
