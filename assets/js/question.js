@@ -632,7 +632,7 @@ const questions = [
     {
         number: "34",
         question: "(      _____         )은 최단 작업 우선(SJF)과 같은 알고리즘에서 긴 작업이 계속 뒤로 밀리는 것을 말한다.",
-        answer: "아사(starvation) 현상",
+        answer: ["아사(starvation) 현상", "아사현상", "아사 현상", ],
         chapter: "4장",
         type: "fill-in-blank"
     },
@@ -646,7 +646,7 @@ const questions = [
     {
         number: "36",
         question: "(     _____          ) 스케줄링은 선점형 알고리즘 중 우선순위가 적용되지 않는 가장 단순하고 대표적인 방식의 알고리즘이다.",
-        answer: "라운드 로빈(RR)",
+        answer: ["라운드 로빈(RR)", "라운드 로빈", "라운드로빈"],
         chapter: "4장",
         type: "fill-in-blank"
     },
