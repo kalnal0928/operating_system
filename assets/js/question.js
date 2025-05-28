@@ -445,7 +445,7 @@ const questions = [
     {
         number: "51",
         question: "(     _____         )는 프로세스에서 자원을 공유하고 실행 단위만 여러 개 만드는 것을 말한다.",
-        answer: "멀티스레드",
+        answer: ["멀티스레드", "멀티 스레드"],
         chapter: "3장",
         type: "fill-in-blank"
     },
