@@ -230,10 +230,10 @@ function displayFillInBlankQuestion(question) {
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
 
-    // 입력 필드에 엔터키 이벤트 리스너 추가 (제거 - 전역 이벤트 리스너로 대체)
+    // 입력 필드에 이벤트 리스너 추가
     const blankInput = document.querySelector('.blank-input');
     if (blankInput) {
-        // 모바일 환경을 위한 추가 이벤트
+        // 모바일 환경을 위한 blur 이벤트
         blankInput.addEventListener('blur', () => {
             // 입력 필드에서 포커스가 벗어날 때 자동 제출 (선택적)
             if (blankInput.value.trim() && !blankInput.disabled) {
@@ -270,16 +270,12 @@ document.addEventListener('keydown', function(event) {
             const blankInput = document.querySelector('.blank-input');
             if (!blankInput) return;
             
-            console.log('엔터키 감지됨, 입력 필드 상태:', blankInput.disabled);
-            
             // 이미 제출된 상태인지 확인 (disabled 상태)
             if (blankInput.disabled) {
                 // 이미 제출된 상태라면 다음 문제로 이동
-                console.log('다음 문제로 이동');
                 showNextQuestion();
             } else {
                 // 아직 제출되지 않았다면 제출
-                console.log('답안 제출');
                 handleSubmit();
             }
         }
