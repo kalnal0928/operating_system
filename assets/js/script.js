@@ -234,21 +234,8 @@ function displayFillInBlankQuestion(question) {
     const blankInput = document.querySelector('.blank-input');
     if (blankInput) {
         // 엔터키 이벤트
-        blankInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                
-                // 이미 제출된 상태인지 확인 (disabled 상태)
-                if (blankInput.disabled) {
-                    // 이미 제출된 상태라면 다음 문제로 이동
-                    showNextQuestion();
-                } else {
-                    // 아직 제출되지 않았다면 제출
-                    handleSubmit();
-                }
-            }
-        });
-
+        blankInput.addEventListener('keydown', handleEnterKey);
+        
         // 모바일 환경을 위한 추가 이벤트
         blankInput.addEventListener('blur', () => {
             // 입력 필드에서 포커스가 벗어날 때 자동 제출 (선택적)
@@ -267,6 +254,35 @@ function displayFillInBlankQuestion(question) {
     showAnswerButton.style.display = 'block';
     submitButton.disabled = false;
     showAnswerButton.disabled = false;
+}
+
+// 전역 키 이벤트 리스너 추가
+document.addEventListener('keydown', function(event) {
+    // 엔터키 눌렸을 때 처리
+    if (event.key === 'Enter') {
+        handleEnterKey(event);
+    }
+});
+
+// 엔터키 처리 함수 분리
+function handleEnterKey(event) {
+    // 빈칸 채우기 문제일 때만 처리
+    const currentQuestion = filteredQuestions[currentQuestionIndex];
+    if (!currentQuestion || currentQuestion.type !== 'fill-in-blank') return;
+    
+    event.preventDefault();
+    
+    const blankInput = document.querySelector('.blank-input');
+    if (!blankInput) return;
+    
+    // 이미 제출된 상태인지 확인 (disabled 상태)
+    if (blankInput.disabled) {
+        // 이미 제출된 상태라면 다음 문제로 이동
+        showNextQuestion();
+    } else {
+        // 아직 제출되지 않았다면 제출
+        handleSubmit();
+    }
 }
 
 // 서술형 문제 표시
