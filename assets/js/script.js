@@ -237,7 +237,15 @@ function displayFillInBlankQuestion(question) {
         blankInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                handleSubmit();
+                
+                // 이미 제출된 상태인지 확인 (disabled 상태)
+                if (blankInput.disabled) {
+                    // 이미 제출된 상태라면 다음 문제로 이동
+                    showNextQuestion();
+                } else {
+                    // 아직 제출되지 않았다면 제출
+                    handleSubmit();
+                }
             }
         });
 
@@ -248,6 +256,11 @@ function displayFillInBlankQuestion(question) {
                 handleSubmit();
             }
         });
+        
+        // 자동 포커스 설정
+        setTimeout(() => {
+            blankInput.focus();
+        }, 100);
     }
 
     submitButton.style.display = 'block';
