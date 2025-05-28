@@ -417,7 +417,7 @@ const questions = [
     {
         number: "43",
         question: "fork() 이후에 부모 프로세스에 wait()가 없으면 (    _____          ) 프로세스가 만들어진다.",
-        answer: "좀비 프로세스",
+        answer: "고아 프로세스",
         chapter: "3장",
         type: "fill-in-blank"
     },
