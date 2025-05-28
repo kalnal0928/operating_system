@@ -304,8 +304,8 @@ function handleSubmit() {
             const blankInput = document.querySelector('.blank-input');
             if (blankInput && blankInput.value.trim()) {
                 userAnswer = blankInput.value.trim();
-                // 정답 비교 시 대소문자 구분 없이 비교
-                isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toLowerCase();
+                // 배열 형태의 정답 처리를 위해 checkAnswer 함수 사용
+                isCorrect = checkAnswer(userAnswer, currentQuestion.answer);
             } else {
                 showMessage('빈칸을 채워주세요!', 'warning');
                 return;
@@ -349,9 +349,13 @@ function displayResult(isCorrect, userAnswer, correctAnswer) {
     
     const resultText = document.createElement('p');
     resultText.className = 'result-text';
+    
+    // 정답이 배열인 경우 첫 번째 요소를 표시
+    const displayAnswer = Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer;
+    
     resultText.textContent = isCorrect 
         ? '정답입니다!' 
-        : `오답입니다. 정답은 "${correctAnswer}" 입니다.`;
+        : `오답입니다. 정답은 "${displayAnswer}" 입니다.`;
     
     resultDiv.appendChild(resultIcon);
     resultDiv.appendChild(resultText);
