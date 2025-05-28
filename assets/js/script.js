@@ -272,6 +272,16 @@ function displayEssayQuestion(question) {
     showAnswerButton.disabled = false;
 }
 
+// 정답 검증 함수 (예시)
+function checkAnswer(userAnswer, correctAnswer) {
+    if (Array.isArray(correctAnswer)) {
+        return correctAnswer.some(answer => 
+            userAnswer.trim().toLowerCase() === answer.trim().toLowerCase());
+    } else {
+        return userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    }
+}
+
 // 정답 제출 처리 함수 수정
 function handleSubmit() {
     const currentQuestion = filteredQuestions[currentQuestionIndex];

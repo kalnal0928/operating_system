@@ -660,7 +660,7 @@ const questions = [
     {
         number: "38",
         question: "(    _____           ) 스케줄링은 선입선출(FCFS) 스케줄링과 유사하지만, 각 프로세스마다 CPU를 사용할 수 있는 타임 슬라이스가 있으며 우선순위가 없는 알고리즘이다.",
-        answer: "라운드 로빈(RR)",
+        answer: ["라운드 로빈(RR)", "라운드 로빈", "라운드로빈"],
         chapter: "4장",
         type: "fill-in-blank"
     },
