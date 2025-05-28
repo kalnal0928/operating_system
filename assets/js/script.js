@@ -72,12 +72,12 @@ function filterQuestions() {
     let filtered = [...questions];
     
     // 챕터 필터링
-    if (selectedChapter !== 'all') {
+    if (selectedChapter !== 'all' && selectedChapter !== '선택하세요') {
         filtered = filtered.filter(q => q.chapter === selectedChapter);
     }
     
     // 유형 필터링
-    if (selectedType !== 'all') {
+    if (selectedType !== 'all' && selectedType !== '선택하세요') {
         filtered = filtered.filter(q => q.type === selectedType);
     }
     
@@ -87,7 +87,13 @@ function filterQuestions() {
         return false;
     }
     
-    // 필터링된 문제 목록 저장
+    // Fisher-Yates 알고리즘을 사용하여 배열을 무작위로 섞기
+    for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+    }
+    
+    // 필터링되고 섞인 문제 목록 저장
     filteredQuestions = filtered;
     return true;
 }
@@ -218,7 +224,8 @@ function displayFillInBlankQuestion(question) {
     // 괄호 안에 언더바가 2개 이상 있을 때만 입력 칸으로 변환
     const formattedQuestion = question.question.replace(/\(([^)]*)\)/g, function(match, inner) {
         if ((inner.match(/_/g) || []).length >= 2) {
-            return '<input type="text" class="blank-input" placeholder="정답 입력">';
+            // 모바일 환경을 위한 속성 추가
+            return '<input type="text" class="blank-input" placeholder="정답 입력" inputmode="text" enterkeyhint="done">';
         }
         return match;
     });
@@ -226,11 +233,57 @@ function displayFillInBlankQuestion(question) {
     answerContainer.innerHTML = formattedQuestion;
     questionContainer.appendChild(answerContainer);
 
+    // 입력 필드에 이벤트 리스너 추가
+    const blankInput = document.querySelector('.blank-input');
+    if (blankInput) {
+        // 모바일 환경을 위한 blur 이벤트
+        blankInput.addEventListener('blur', () => {
+            // 입력 필드에서 포커스가 벗어날 때 자동 제출 (선택적)
+            if (blankInput.value.trim() && !blankInput.disabled) {
+                handleSubmit();
+            }
+        });
+        
+        // 자동 포커스 설정
+        setTimeout(() => {
+            blankInput.focus();
+        }, 100);
+    }
+
     submitButton.style.display = 'block';
     showAnswerButton.style.display = 'block';
     submitButton.disabled = false;
     showAnswerButton.disabled = false;
 }
+
+// 전역 키 이벤트 리스너 수정
+document.addEventListener('keydown', function(event) {
+    // 퀴즈가 시작된 경우에만 처리
+    if (!quizStarted) return;
+    
+    // 엔터키 눌렸을 때 처리
+    if (event.key === 'Enter') {
+        const currentQuestion = filteredQuestions[currentQuestionIndex];
+        if (!currentQuestion) return;
+        
+        // 현재 문제가 빈칸 채우기인 경우
+        if (currentQuestion.type === 'fill-in-blank') {
+            event.preventDefault();
+            
+            const blankInput = document.querySelector('.blank-input');
+            if (!blankInput) return;
+            
+            // 이미 제출된 상태인지 확인 (disabled 상태)
+            if (blankInput.disabled) {
+                // 이미 제출된 상태라면 다음 문제로 이동
+                showNextQuestion();
+            } else {
+                // 아직 제출되지 않았다면 제출
+                handleSubmit();
+            }
+        }
+    }
+});
 
 // 서술형 문제 표시
 function displayEssayQuestion(question) {
@@ -246,6 +299,16 @@ function displayEssayQuestion(question) {
     questionContainer.appendChild(essayContainer);
     submitButton.disabled = false;
     showAnswerButton.disabled = false;
+}
+
+// 정답 검증 함수 (예시)
+function checkAnswer(userAnswer, correctAnswer) {
+    if (Array.isArray(correctAnswer)) {
+        return correctAnswer.some(answer => 
+            userAnswer.trim().toLowerCase() === answer.trim().toLowerCase());
+    } else {
+        return userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    }
 }
 
 // 정답 제출 처리 함수 수정
@@ -270,8 +333,15 @@ function handleSubmit() {
             const blankInput = document.querySelector('.blank-input');
             if (blankInput && blankInput.value.trim()) {
                 userAnswer = blankInput.value.trim();
-                // 정답 비교 시 대소문자 구분 없이 비교
-                isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toLowerCase();
+                
+                // 정답이 배열인지 확인하고 그에 맞게 처리
+                if (Array.isArray(currentQuestion.answer)) {
+                    isCorrect = currentQuestion.answer.some(answer => 
+                        userAnswer.trim().toLowerCase() === answer.trim().toLowerCase()
+                    );
+                } else {
+                    isCorrect = userAnswer.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase();
+                }
             } else {
                 showMessage('빈칸을 채워주세요!', 'warning');
                 return;
@@ -315,9 +385,13 @@ function displayResult(isCorrect, userAnswer, correctAnswer) {
     
     const resultText = document.createElement('p');
     resultText.className = 'result-text';
+    
+    // 정답이 배열인 경우 첫 번째 요소를 표시
+    const displayAnswer = Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer;
+    
     resultText.textContent = isCorrect 
         ? '정답입니다!' 
-        : `오답입니다. 정답은 "${correctAnswer}" 입니다.`;
+        : `오답입니다. 정답은 "${displayAnswer}" 입니다.`;
     
     resultDiv.appendChild(resultIcon);
     resultDiv.appendChild(resultText);

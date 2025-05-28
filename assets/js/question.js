@@ -108,7 +108,7 @@ const questions = [
     {
         number: "23",
         question: "(    _____      )은 CPU 성능이 낮고 메모리 크기가 작은 기계에 탑재된 컴퓨터다.",
-        answer: "임베디드 컴퓨터",
+        answer: ["임베디드 컴퓨터", "임베디드 시스템", "임베디드컴퓨터", "임베디드시스템"],
         chapter: "1장",
         type: "fill-in-blank"
     },
@@ -122,49 +122,49 @@ const questions = [
     {
         number: "29",
         question: "(   _____    )은 키보드와 모니터가 발명되면서 실현 가능하게 된 시스템이다.",
-        answer: "대화형 시스템",
+        answer: ["대화형 시스템", "대화형시스템"],
         chapter: "1장",
         type: "fill-in-blank"
     },
     {
         number: "30",
         question: "(  _____   )은 CPU 시간을 잘게 나누어 여러 프로그램이 동시에 실행되는 것처럼 보이는 시스템이다.",
-        answer: "시분할 시스템",
+        answer: ["시분할 시스템", "시분할시스템"],
         chapter: "1장",
         type: "fill-in-blank"
     },
     {
         number: "33",
         question: "사용자가 자발적으로 커널에 진입할 수 있는 유일한 방법은 (   _____   )뿐이다.",
-        answer: "시스템 호출",
+        answer: ["시스템 호출", "시스템호출"],
         chapter: "1장",
         type: "fill-in-blank"
     },
     {
         number: "34",
         question: "(    _____   )는 응용 프로그램이 자신과 연관된 프로그램을 만들 수 있도록 제공하는 인터페이스다.",
-        answer: "API",
+        answer: ["API", "api"],
         chapter: "1장",
         type: "fill-in-blank"
     },
     {
         number: "37",
         question: "(     _____    )은 핵심 기능을 구현하는 모듈이 구분 없이 하나로 구성된 커널이다.",
-        answer: "단일형 구조 커널",
+        answer: ["단일형 구조 커널", "단일형구조커널", "단일형"],
         chapter: "1장",
         type: "fill-in-blank"
     },
     {
         number: "38",
         question: "(   _____   )은 비슷한 기능을 가진 모듈을 묶어서 하나의 계층으로 만들고, 계층 간의 통신을 통해 운영체제를 구현하는 방식의 커널이다.",
-        answer: "계층형 구조 커널",
+        answer: ["계층형 구조 커널", "계층형구조커널", "계층형"],
         chapter: "1장",
         type: "fill-in-blank"
     },
     {
         number: "39",
         question: "(    _____    )은 프로세스 관리, 메모리 관리, 프로세스 간 통신 관리 등 가장 기본 기능만 제공하는 커널이다.",
-        answer: "마이크로 구조 커널",
+        answer: ["마이크로 구조 커널", "마이크로구조커널", "마이크로형"],
         chapter: "1장",
         type: "fill-in-blank"
     },
@@ -361,14 +361,14 @@ const questions = [
     {
         number: "30",
         question: "(       _____     )은 두 프로세스의 PCB를 교환하고 작업 환경을 바꾸는 작업이다.",
-        answer: "문맥 교환",
+        answer: ["문맥 교환", "문맥교환"],
         chapter: "3장",
         type: "fill-in-blank"
     },
     {
         number: "33",
         question: "유닉스에서 프로세스 번호 1번이면서 모든 프로세스의 최고 조상 프로세스에 해당하는 프로세스의 이름은 (    _____          )이다.",
-        answer: "init 프로세스",
+        answer: ["init 프로세스", "init프로세스", "init"],
         chapter: "3장",
         type: "fill-in-blank"
     },
@@ -403,21 +403,21 @@ const questions = [
     {
         number: "41",
         question: "자식 프로세스가 종료되기 전에 부모 프로세스가 먼저 종료되면 자식 프로세스는 (    _____          )가 된다.",
-        answer: "고아 프로세스",
+        answer: ["고아 프로세스", "고아프로세스", "orphan 프로세스", "orphan프로세스"],
         chapter: "3장",
         type: "fill-in-blank"
     },
     {
         number: "42",
         question: "자식 프로세스가 종료되었는데도 부모가 뒤처리를 하지 않으면 자식 프로세스는 (   _____           )가 된다.",
-        answer: "좀비 프로세스",
+        answer: ["좀비 프로세스", "좀비프로세스", "zombi 프로세스", "zombiprocess"],
         chapter: "3장",
         type: "fill-in-blank"
     },
     {
         number: "43",
         question: "fork() 이후에 부모 프로세스에 wait()가 없으면 (    _____          ) 프로세스가 만들어진다.",
-        answer: "좀비 프로세스",
+        answer: ["고아 프로세스", "고아프로세스", "orphan 프로세스", "orphan프로세스", " 고아"],
         chapter: "3장",
         type: "fill-in-blank"
     },
@@ -431,7 +431,7 @@ const questions = [
     {
         number: "47",
         question: "(     _____          )는 프로세스를 실행하는 데 필요한 정보를 보관하는 자료구조다.",
-        answer: "프로세스 제어 블록(PCB, process control block)",
+        answer: ["프로세스 제어 블록(PCB, process control block)", "프로세스제어블록(PCB, process control block)", "process control block(PCB)", "pcb"],
         chapter: "3장",
         type: "fill-in-blank"
     },
@@ -445,7 +445,7 @@ const questions = [
     {
         number: "51",
         question: "(     _____         )는 프로세스에서 자원을 공유하고 실행 단위만 여러 개 만드는 것을 말한다.",
-        answer: "멀티스레드",
+        answer: ["멀티스레드", "멀티 스레드"],
         chapter: "3장",
         type: "fill-in-blank"
     },
@@ -576,14 +576,14 @@ const questions = [
     {
         number: "24",
         question: "비선점형과 선점형 스케줄링 중 실행 상태에 있는 작업을 중단시키고 새로운 작업을 실행할 수 있는 것은 (  _____            )이다.",
-        answer: "선점형 스케줄링",
+        answer: ["선점형 스케줄링", "선점형", "선점"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "25",
         question: "비선점형과 선점형 스케줄링 중 실행 상태에 있는 작업이 완료될 때까지 다른 작업이 불가능한 것은 (      _____        )이다.",
-        answer: "비선점형 스케줄링",
+        answer: ["비선점형 스케줄링", "비선점형", "비선점"],
         chapter: "4장",
         type: "fill-in-blank"
     },
@@ -618,77 +618,77 @@ const questions = [
     {
         number: "32",
         question: "(       _____        ) 스케줄링은 콘보이 효과가 발생하는 스케줄링 알고리즘이다.",
-        answer: "선입선출(FCFS)",
+        answer: ["선입선출(FCFS)", "선입 선출", "선입선출", "fcfs"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "33",
         question: "(      _____         ) 스케줄링은 준비 큐에 있는 프로세스 중에서 실행 시간이 가장 짧은 작업부터 CPU를 할당하는 비선점형 방식의 스케줄링 알고리즘이다.",
-        answer: "최단 작업 우선(SJF)",
+        answer: ["최단 작업 우선(SJF)", "최단작업우선", "최단 작업 우선", "sjf"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "34",
         question: "(      _____         )은 최단 작업 우선(SJF)과 같은 알고리즘에서 긴 작업이 계속 뒤로 밀리는 것을 말한다.",
-        answer: "아사(starvation) 현상",
+        answer: ["아사(starvation) 현상", "아사현상", "아사 현상", ],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "35",
         question: "(     _____          ) 스케줄링은 서비스를 받기 위해 기다린 시간과 CPU 사용 시간을 고려하여 스케줄링하는 비선점형 알고리즘이다.",
-        answer: "최고 응답률 우선(HRN)",
+        answer: ["최고 응답률 우선(HRN)", "최고응답률우선", "최고 응답률 우선", "hrn"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "36",
         question: "(     _____          ) 스케줄링은 선점형 알고리즘 중 우선순위가 적용되지 않는 가장 단순하고 대표적인 방식의 알고리즘이다.",
-        answer: "라운드 로빈(RR)",
+        answer: ["라운드 로빈(RR)", "라운드 로빈", "라운드로빈"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "37",
         question: "(  _____             )은 아사 현상을 완화하는 방법이다.",
-        answer: "에이징(나이 먹기, aging)",
+        answer: ["에이징(나이 먹기, aging)", "에이징", "나이 먹기", "aging"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "38",
         question: "(    _____           ) 스케줄링은 선입선출(FCFS) 스케줄링과 유사하지만, 각 프로세스마다 CPU를 사용할 수 있는 타임 슬라이스가 있으며 우선순위가 없는 알고리즘이다.",
-        answer: "라운드 로빈(RR)",
+        answer: ["라운드 로빈(RR)", "라운드 로빈", "라운드로빈"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "39",
         question: "(     _____          ) 스케줄링은 최단 작업 우선(SJF)과 라운드 로빈(RR) 스케줄링을 혼합한 선점형 알고리즘이다.",
-        answer: "최소 잔류 시간 우선(SRT)",
+        answer: ["최소 잔류 시간 우선(SRT)", "최소잔류시간우선", "최소 잔여 시간 우선", "srt"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "40",
         question: "(     _____          ) 스케줄링은 우선순위에 따라 여러 개의 큐를 사용하는 알고리즘 중 고정 우선순위 방식의 알고리즘이다.",
-        answer: "다단계 큐(MLQ)",
+        answer: ["다단계 큐(MLQ)", "다단계큐", "다단계 큐", "mlq"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "41",
         question: "(    _____           ) 스케줄링은 기본적으로 라운드 로빈 스케줄링을 사용하지만, CPU를 할당받을 프로세스를 선택할 때 남은 작업 시간이 가장 적은 프로세스를 선택하는 알고리즘이다.",
-        answer: "최소 잔류 시간 우선(SRT)",
+        answer: ["최소 잔류 시간 우선(SRT)", "최소잔류시간우선", "최소 잔여 시간 우선", "srt"],
         chapter: "4장",
         type: "fill-in-blank"
     },
     {
         number: "42",
         question: "(     _____          ) 스케줄링은 우선순위에 따라 여러 개의 큐를 사용하고 각 큐의 타임 슬라이스 크기가 다른 변동 우선순위 알고리즘이다.",
-        answer: "다단계 피드백 큐(MLFQ)",
+        answer: ["다단계 피드백 큐(MLFQ)", "다단계피드백큐", "다단계 피드백 큐", "mlfq", "다단계피드백 큐"],
         chapter: "4장",
         type: "fill-in-blank"
     },
