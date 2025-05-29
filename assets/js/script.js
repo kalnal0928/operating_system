@@ -39,14 +39,24 @@ function init() {
     
     // 선택 화면 표시, 문제 화면 숨김
     showSelectionScreen();
+}
+
+// 점수 초기화 함수 개선
+function initScores() {
+    scoreByChapter = {};
+    totalScore = 0;
+    totalQuestions = 0;
     
-    // 이벤트 리스너 등록
-    submitButton.addEventListener('click', handleSubmit);
-    showAnswerButton.addEventListener('click', showAnswer);
-    prevButton.addEventListener('click', showPreviousQuestion);
-    nextButton.addEventListener('click', showNextQuestion);
-    startButton.addEventListener('click', startQuiz);
-    resetButton.addEventListener('click', init);
+    // 모든 장에 대한 점수 초기화
+    const chapters = [...new Set(questions.map(q => q.chapter))];
+    chapters.forEach(chapter => {
+        scoreByChapter[chapter] = {
+            correct: 0,
+            total: questions.filter(q => q.chapter === chapter).length
+        };
+    });
+    
+    console.log('점수 초기화 완료:', scoreByChapter);
 }
 
 // 선택 화면 표시 함수 (신규)
@@ -197,11 +207,11 @@ function displayMultipleChoiceQuestion(question) {
                     }
                 });
 
-                // 마지막 문제인 경우 잠시 후 선택지 표시
-                if (currentQuestionIndex === filteredQuestions.length - 1) {
+                // 마지막 문제인 경우 잠시 후 결과 페이지 표시
+                if (currentQuestionIndex >= filteredQuestions.length - 1) {
                     setTimeout(() => {
-                        handleLastQuestion();
-                    }, 1500); // 1.5초 후 선택지 표시
+                        showQuizResult();
+                    }, 1500); // 1.5초 후 결과 페이지 표시
                 }
             }
         });
@@ -458,7 +468,8 @@ function showPreviousQuestion() {
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
     // 현재가 마지막 문제인 경우 결과 페이지 표시
-    if (currentQuestionIndex === filteredQuestions.length - 1) {
+    if (currentQuestionIndex >= filteredQuestions.length - 1) {
+        console.log('마지막 문제 완료, 결과 페이지로 이동');
         showQuizResult();
         return;
     }
@@ -525,6 +536,9 @@ function handleLastQuestion() {
 
 // 점수 결과 표시 함수
 function showQuizResult() {
+    console.log('결과 페이지 표시 함수 실행');
+    console.log('총점:', totalScore, '총 문제수:', totalQuestions);
+    
     questionContainer.innerHTML = '';
     resultContainer.innerHTML = '';
     
@@ -533,20 +547,24 @@ function showQuizResult() {
     
     // 전체 점수 표시
     const totalScoreElement = document.createElement('h2');
-    totalScoreElement.textContent = `총점: ${totalScore}/${totalQuestions}점 (${Math.round(totalScore / totalQuestions * 100)}%)`;
+    const percentage = totalQuestions > 0 ? Math.round(totalScore / totalQuestions * 100) : 0;
+    totalScoreElement.textContent = `총점: ${totalScore}/${totalQuestions}점 (${percentage}%)`;
     resultPage.appendChild(totalScoreElement);
     
     // 각 장별 점수 표시
     const chapterScores = document.createElement('div');
     chapterScores.className = 'chapter-scores';
     
+    let hasChapterScores = false;
+    
     Object.keys(scoreByChapter).sort().forEach(chapter => {
         const score = scoreByChapter[chapter];
-        if (score.total > 0) { // 해당 챕터의 문제를 풀었을 경우만 표시
+        if (score && score.total > 0) { // 해당 챕터의 문제를 풀었을 경우만 표시
+            hasChapterScores = true;
             const chapterScore = document.createElement('div');
             chapterScore.className = 'chapter-score';
             
-            const percentage = Math.round(score.correct / score.total * 100);
+            const percentage = Math.round((score.correct / score.total) * 100);
             chapterScore.innerHTML = `
                 <h3>${chapter}</h3>
                 <p>${score.correct}/${score.total}점 (${percentage}%)</p>
@@ -557,6 +575,12 @@ function showQuizResult() {
             chapterScores.appendChild(chapterScore);
         }
     });
+    
+    if (!hasChapterScores) {
+        const noScores = document.createElement('p');
+        noScores.textContent = '장별 점수가 없습니다.';
+        chapterScores.appendChild(noScores);
+    }
     
     resultPage.appendChild(chapterScores);
     
@@ -577,6 +601,9 @@ function showQuizResult() {
     submitButton.style.display = 'none';
     showAnswerButton.style.display = 'none';
     document.getElementById('question-counter').style.display = 'none';
+    
+    // 퀴즈 완료 상태 설정
+    quizStarted = false;
 }
 
 // 버튼 상태 업데이트
@@ -671,6 +698,8 @@ function initScores() {
             total: questions.filter(q => q.chapter === chapter).length
         };
     });
+    
+    console.log('점수 초기화 완료:', scoreByChapter);
 }
 
 // CSS 스타일 추가
