@@ -22,6 +22,7 @@ let filteredQuestions = [];  // 빈 배열로 시작
 let incorrectQuestions = []; // 틀린 문제 저장 배열
 let isReviewMode = false; // 오답 복습 모드 여부
 let quizStarted = false;  // 퀴즈 시작 여부 추가
+let isAnswerSubmitted = false; // 답안 제출 상태 추가
 
 // 초기화 함수 수정
 function init() {
@@ -226,6 +227,9 @@ function displayMultipleChoiceQuestion(question) {
 
 // 빈칸 채우기 문제 표시 함수 수정
 function displayFillInBlankQuestion(question) {
+    // 답안 제출 상태 초기화
+    isAnswerSubmitted = false;
+    
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
 
@@ -247,7 +251,7 @@ function displayFillInBlankQuestion(question) {
         // 모바일 환경을 위한 blur 이벤트
         blankInput.addEventListener('blur', () => {
             // 입력 필드에서 포커스가 벗어날 때 자동 제출 (선택적)
-            if (blankInput.value.trim() && !blankInput.disabled) {
+            if (blankInput.value.trim() && !isAnswerSubmitted) {
                 handleSubmit();
             }
         });
@@ -281,8 +285,8 @@ document.addEventListener('keydown', function(event) {
             const blankInput = document.querySelector('.blank-input');
             if (!blankInput) return;
             
-            // 이미 제출된 상태인지 확인 (disabled 상태)
-            if (blankInput.disabled) {
+            // 이미 제출된 상태인지 확인
+            if (isAnswerSubmitted) {
                 // 이미 제출된 상태라면 다음 문제로 이동
                 showNextQuestion();
             } else {
@@ -350,6 +354,10 @@ function handleSubmit() {
                 } else {
                     isCorrect = userAnswer.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase();
                 }
+                
+                // 답안 제출 상태 업데이트
+                isAnswerSubmitted = true;
+                blankInput.disabled = true;
             } else {
                 showMessage('빈칸을 채워주세요!', 'warning');
                 return;
@@ -370,14 +378,6 @@ function handleSubmit() {
     
     // 결과 표시
     displayResult(isCorrect, userAnswer, currentQuestion.answer);
-    
-    // 빈칸 채우기 문제의 경우 입력 필드 비활성화
-    if (currentQuestion.type === 'fill-in-blank') {
-        const blankInput = document.querySelector('.blank-input');
-        if (blankInput) {
-            blankInput.disabled = true;
-        }
-    }
 }
 
 // 결과 표시
@@ -450,6 +450,9 @@ function showPreviousQuestion() {
 
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
+    // 답안 제출 상태 초기화
+    isAnswerSubmitted = false;
+    
     if (currentQuestionIndex < filteredQuestions.length - 1) {
         currentQuestionIndex++;
         updateQuestionCounter();
@@ -575,7 +578,7 @@ function showResetButton() {
     resultContainer.appendChild(resetBtn);
 }
 
-// 퀴즈 리셋 함수
+// 퀴즈 리셋 함수 수정
 function resetQuiz() {
     // 상태 초기화
     incorrectQuestions = [];
@@ -583,6 +586,7 @@ function resetQuiz() {
     quizStarted = false;
     currentQuestionIndex = 0;
     filteredQuestions = [];
+    isAnswerSubmitted = false;  // 답안 제출 상태 초기화
     
     // 필터 초기화
     selectionChapterFilter.value = '선택하세요';
