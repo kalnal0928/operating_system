@@ -23,6 +23,7 @@ let incorrectQuestions = []; // 틀린 문제 저장 배열
 let isReviewMode = false; // 오답 복습 모드 여부
 let quizStarted = false;  // 퀴즈 시작 여부 추가
 let isAnswerSubmitted = false; // 답안 제출 상태 추가
+let isMultipleChoiceAnswered = false; // 객관식 답변 상태 추가
 
 // 초기화 함수 수정
 function init() {
@@ -159,8 +160,11 @@ function displayQuestion() {
     updateButtonStates();
 }
 
-// 객관식 문제 표시 함수 수정 - 옵션 랜덤 섞기 추가
+// 객관식 문제 표시 함수 수정
 function displayMultipleChoiceQuestion(question) {
+    // 객관식 답변 상태 초기화
+    isMultipleChoiceAnswered = false;
+    
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
     
@@ -184,7 +188,7 @@ function displayMultipleChoiceQuestion(question) {
         input.name = 'option';
         input.value = option;
         input.id = `option-${index}`;
-        input.dataset.optionNumber = (index + 1).toString(); // 옵션 번호 저장
+        input.dataset.optionNumber = (index + 1).toString();
         
         // 라디오 버튼에 변경 이벤트 리스너 추가
         input.addEventListener('change', () => {
@@ -206,11 +210,14 @@ function displayMultipleChoiceQuestion(question) {
                     }
                 });
 
+                // 객관식 답변 상태 업데이트
+                isMultipleChoiceAnswered = true;
+
                 // 마지막 문제인 경우 잠시 후 선택지 표시
                 if (currentQuestionIndex === filteredQuestions.length - 1) {
                     setTimeout(() => {
                         handleLastQuestion();
-                    }, 1500); // 1.5초 후 선택지 표시
+                    }, 1500);
                 }
             }
         });
@@ -278,6 +285,31 @@ document.addEventListener('keydown', function(event) {
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     if (!currentQuestion) return;
 
+    // 엔터키 눌렸을 때 처리
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        if (currentQuestion.type === 'multiple-choice') {
+            // 객관식 문제에서 답을 선택한 후 엔터키를 누른 경우
+            if (isMultipleChoiceAnswered) {
+                showNextQuestion();
+            }
+        } else if (currentQuestion.type === 'fill-in-blank') {
+            const blankInput = document.querySelector('.blank-input');
+            if (!blankInput) return;
+            
+            // 이미 제출된 상태인지 확인
+            if (isAnswerSubmitted) {
+                // 이미 제출된 상태라면 다음 문제로 이동
+                showNextQuestion();
+            } else {
+                // 아직 제출되지 않았다면 제출
+                handleSubmit();
+            }
+        }
+        return;
+    }
+
     // 객관식 문제에서 숫자 키 처리
     if (currentQuestion.type === 'multiple-choice') {
         const numKey = parseInt(event.key);
@@ -291,26 +323,6 @@ document.addEventListener('keydown', function(event) {
                 targetOption.dispatchEvent(new Event('change'));
             }
             return;
-        }
-    }
-    
-    // 엔터키 눌렸을 때 처리
-    if (event.key === 'Enter') {
-        // 현재 문제가 빈칸 채우기인 경우
-        if (currentQuestion.type === 'fill-in-blank') {
-            event.preventDefault();
-            
-            const blankInput = document.querySelector('.blank-input');
-            if (!blankInput) return;
-            
-            // 이미 제출된 상태인지 확인
-            if (isAnswerSubmitted) {
-                // 이미 제출된 상태라면 다음 문제로 이동
-                showNextQuestion();
-            } else {
-                // 아직 제출되지 않았다면 제출
-                handleSubmit();
-            }
         }
     }
 });
@@ -468,8 +480,9 @@ function showPreviousQuestion() {
 
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
-    // 답안 제출 상태 초기화
+    // 상태 초기화
     isAnswerSubmitted = false;
+    isMultipleChoiceAnswered = false;
     
     if (currentQuestionIndex < filteredQuestions.length - 1) {
         currentQuestionIndex++;
@@ -604,7 +617,8 @@ function resetQuiz() {
     quizStarted = false;
     currentQuestionIndex = 0;
     filteredQuestions = [];
-    isAnswerSubmitted = false;  // 답안 제출 상태 초기화
+    isAnswerSubmitted = false;
+    isMultipleChoiceAnswered = false;  // 객관식 답변 상태 초기화
     
     // 필터 초기화
     selectionChapterFilter.value = '선택하세요';
