@@ -164,6 +164,7 @@ function displayQuestion() {
 function displayMultipleChoiceQuestion(question) {
     // 객관식 답변 상태 초기화
     isMultipleChoiceAnswered = false;
+    console.log('새로운 객관식 문제 표시: 답변 상태 초기화');
     
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
@@ -193,6 +194,7 @@ function displayMultipleChoiceQuestion(question) {
         // 라디오 버튼에 변경 이벤트 리스너 추가
         input.addEventListener('change', () => {
             if (input.checked) {
+                console.log('객관식 답변 선택됨');
                 // 선택 즉시 정답 체크
                 const isCorrect = option === correctAnswer;
                 displayResult(isCorrect, option, correctAnswer);
@@ -212,6 +214,7 @@ function displayMultipleChoiceQuestion(question) {
 
                 // 객관식 답변 상태 업데이트
                 isMultipleChoiceAnswered = true;
+                console.log('객관식 답변 상태 업데이트:', isMultipleChoiceAnswered);
 
                 // 마지막 문제인 경우 잠시 후 선택지 표시
                 if (currentQuestionIndex === filteredQuestions.length - 1) {
@@ -289,29 +292,34 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         
+        // 객관식 문제 처리
         if (currentQuestion.type === 'multiple-choice') {
-            // 객관식 문제에서 답을 선택한 후 엔터키를 누른 경우
+            // 답을 선택한 후 엔터키를 누른 경우에만 다음 문제로 이동
             if (isMultipleChoiceAnswered) {
+                console.log('객관식 답변 후 엔터키: 다음 문제로 이동');
                 showNextQuestion();
             }
-        } else if (currentQuestion.type === 'fill-in-blank') {
+            return;
+        }
+        
+        // 빈칸 채우기 문제 처리
+        if (currentQuestion.type === 'fill-in-blank') {
             const blankInput = document.querySelector('.blank-input');
             if (!blankInput) return;
             
-            // 이미 제출된 상태인지 확인
             if (isAnswerSubmitted) {
-                // 이미 제출된 상태라면 다음 문제로 이동
+                console.log('빈칸 채우기 답변 후 엔터키: 다음 문제로 이동');
                 showNextQuestion();
             } else {
-                // 아직 제출되지 않았다면 제출
+                console.log('빈칸 채우기 엔터키: 답안 제출');
                 handleSubmit();
             }
+            return;
         }
-        return;
     }
 
-    // 객관식 문제에서 숫자 키 처리
-    if (currentQuestion.type === 'multiple-choice') {
+    // 객관식 문제에서 숫자 키 처리 (엔터키가 아닌 경우에만)
+    if (currentQuestion.type === 'multiple-choice' && !isMultipleChoiceAnswered) {
         const numKey = parseInt(event.key);
         if (numKey >= 1 && numKey <= 4) {  // 1~4 키 처리
             event.preventDefault();
@@ -322,7 +330,6 @@ document.addEventListener('keydown', function(event) {
                 // change 이벤트를 수동으로 발생시켜 정답 체크 로직 실행
                 targetOption.dispatchEvent(new Event('change'));
             }
-            return;
         }
     }
 });
@@ -480,6 +487,7 @@ function showPreviousQuestion() {
 
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
+    console.log('다음 문제로 이동');
     // 상태 초기화
     isAnswerSubmitted = false;
     isMultipleChoiceAnswered = false;
