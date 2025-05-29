@@ -300,7 +300,7 @@ function displayEssayQuestion(question) {
     const textarea = document.createElement('textarea');
     textarea.className = 'essay-input';
     textarea.rows = 6;
-    textarea.placeholder = '답변을 작성하세요...';
+    textarea.placeholder = '답변을 작성하세요... (엔터키로 정답 확인)';
     
     essayContainer.appendChild(textarea);
     questionContainer.appendChild(essayContainer);
@@ -309,6 +309,11 @@ function displayEssayQuestion(question) {
     submitButton.style.display = 'block';
     showAnswerButton.style.display = 'none';  // 정답 보기 버튼 숨김
     submitButton.disabled = false;
+
+    // 자동 포커스 설정
+    setTimeout(() => {
+        textarea.focus();
+    }, 100);
 }
 
 // 정답 검증 함수 (예시)
@@ -369,13 +374,11 @@ function handleSubmit() {
                 // 서술형 문제는 제출 후 정답 표시
                 isAnswerSubmitted = true;
                 essayInput.disabled = true;  // 입력 필드 비활성화
-                showAnswer();  // 정답 표시
-                isEssayAnswerShown = true;  // 정답 표시 상태 업데이트
-                return;
-            } else {
-                showMessage('답변을 작성해주세요!', 'warning');
-                return;
             }
+            // 답변 유무와 관계없이 정답 표시
+            showAnswer();
+            isEssayAnswerShown = true;  // 정답 표시 상태 업데이트
+            return;
     }
     
     // 결과 표시
@@ -718,8 +721,8 @@ document.addEventListener('keydown', function(event) {
                 console.log('서술형 정답 확인 후 엔터키: 다음 문제로 이동');
                 showNextQuestion();
             } else {
-                console.log('서술형 엔터키: 답안 제출 및 정답 확인');
-                handleSubmit();
+                console.log('서술형 엔터키: 정답 확인');
+                handleSubmit();  // 답변 유무와 관계없이 정답 표시
             }
             return;
         }
