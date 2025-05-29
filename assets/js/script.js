@@ -121,6 +121,9 @@ function startQuiz() {
 function displayQuestion() {
     if (filteredQuestions.length === 0) return;
     
+    // 문제 유형이 바뀔 때마다 상태 초기화
+    resetQuestionStates();
+    
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     questionContainer.innerHTML = '';  // 컨테이너 초기화
     resultContainer.innerHTML = '';    // 결과 컨테이너 초기화
@@ -160,11 +163,17 @@ function displayQuestion() {
     updateButtonStates();
 }
 
+// 문제 상태 초기화 함수 추가
+function resetQuestionStates() {
+    console.log('문제 상태 초기화');
+    isAnswerSubmitted = false;
+    isMultipleChoiceAnswered = false;
+}
+
 // 객관식 문제 표시 함수 수정
 function displayMultipleChoiceQuestion(question) {
-    // 객관식 답변 상태 초기화
-    isMultipleChoiceAnswered = false;
-    console.log('새로운 객관식 문제 표시: 답변 상태 초기화');
+    // 상태 초기화는 displayQuestion에서 처리하므로 여기서는 제거
+    console.log('객관식 문제 표시');
     
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
@@ -239,8 +248,8 @@ function displayMultipleChoiceQuestion(question) {
 
 // 빈칸 채우기 문제 표시 함수 수정
 function displayFillInBlankQuestion(question) {
-    // 답안 제출 상태 초기화
-    isAnswerSubmitted = false;
+    // 상태 초기화는 displayQuestion에서 처리하므로 여기서는 제거
+    console.log('빈칸 채우기 문제 표시');
     
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
@@ -279,60 +288,6 @@ function displayFillInBlankQuestion(question) {
     submitButton.disabled = false;
     showAnswerButton.disabled = false;
 }
-
-// 전역 키 이벤트 리스너 수정
-document.addEventListener('keydown', function(event) {
-    // 퀴즈가 시작된 경우에만 처리
-    if (!quizStarted) return;
-    
-    const currentQuestion = filteredQuestions[currentQuestionIndex];
-    if (!currentQuestion) return;
-
-    // 엔터키 눌렸을 때 처리
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        
-        // 객관식 문제 처리
-        if (currentQuestion.type === 'multiple-choice') {
-            // 답을 선택한 후 엔터키를 누른 경우에만 다음 문제로 이동
-            if (isMultipleChoiceAnswered) {
-                console.log('객관식 답변 후 엔터키: 다음 문제로 이동');
-                showNextQuestion();
-            }
-            return;
-        }
-        
-        // 빈칸 채우기 문제 처리
-        if (currentQuestion.type === 'fill-in-blank') {
-            const blankInput = document.querySelector('.blank-input');
-            if (!blankInput) return;
-            
-            if (isAnswerSubmitted) {
-                console.log('빈칸 채우기 답변 후 엔터키: 다음 문제로 이동');
-                showNextQuestion();
-            } else {
-                console.log('빈칸 채우기 엔터키: 답안 제출');
-                handleSubmit();
-            }
-            return;
-        }
-    }
-
-    // 객관식 문제에서 숫자 키 처리 (엔터키가 아닌 경우에만)
-    if (currentQuestion.type === 'multiple-choice' && !isMultipleChoiceAnswered) {
-        const numKey = parseInt(event.key);
-        if (numKey >= 1 && numKey <= 4) {  // 1~4 키 처리
-            event.preventDefault();
-            // 해당 번호의 옵션 찾기
-            const targetOption = document.querySelector(`input[name="option"][data-option-number="${numKey}"]`);
-            if (targetOption && !targetOption.disabled) {  // 옵션이 존재하고 비활성화되지 않은 경우
-                targetOption.checked = true;
-                // change 이벤트를 수동으로 발생시켜 정답 체크 로직 실행
-                targetOption.dispatchEvent(new Event('change'));
-            }
-        }
-    }
-});
 
 // 서술형 문제 표시
 function displayEssayQuestion(question) {
@@ -488,9 +443,7 @@ function showPreviousQuestion() {
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
     console.log('다음 문제로 이동');
-    // 상태 초기화
-    isAnswerSubmitted = false;
-    isMultipleChoiceAnswered = false;
+    // 상태 초기화는 displayQuestion에서 처리하므로 여기서는 제거
     
     if (currentQuestionIndex < filteredQuestions.length - 1) {
         currentQuestionIndex++;
@@ -625,8 +578,7 @@ function resetQuiz() {
     quizStarted = false;
     currentQuestionIndex = 0;
     filteredQuestions = [];
-    isAnswerSubmitted = false;
-    isMultipleChoiceAnswered = false;  // 객관식 답변 상태 초기화
+    resetQuestionStates();  // 문제 상태 초기화 함수 사용
     
     // 필터 초기화
     selectionChapterFilter.value = '선택하세요';
