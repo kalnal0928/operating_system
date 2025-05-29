@@ -23,11 +23,19 @@ let incorrectQuestions = []; // 틀린 문제 저장 배열
 let isReviewMode = false; // 오답 복습 모드 여부
 let quizStarted = false;  // 퀴즈 시작 여부 추가
 
+// 점수 관련 변수 추가
+let scoreByChapter = {};
+let totalScore = 0;
+let totalQuestions = 0;
+
 // 초기화 함수 수정
 function init() {
     incorrectQuestions = [];
     isReviewMode = false;
     quizStarted = false;
+    
+    // 점수 초기화
+    initScores();
     
     // 선택 화면 표시, 문제 화면 숨김
     showSelectionScreen();
@@ -37,21 +45,8 @@ function init() {
     showAnswerButton.addEventListener('click', showAnswer);
     prevButton.addEventListener('click', showPreviousQuestion);
     nextButton.addEventListener('click', showNextQuestion);
-    resetButton.addEventListener('click', resetQuiz);
-    
-    // 시작 버튼 이벤트 리스너 추가
-    startButton.addEventListener('click', () => {
-        // 필터 값 검증
-        const selectedChapter = selectionChapterFilter.value;
-        const selectedType = selectionTypeFilter.value;
-        
-        if (selectedChapter === '선택하세요' || selectedType === '선택하세요') {
-            showMessage('출제 범위와 문제 유형을 모두 선택해주세요.', 'warning');
-            return;
-        }
-        
-        startQuiz();
-    });
+    startButton.addEventListener('click', startQuiz);
+    resetButton.addEventListener('click', init);
 }
 
 // 선택 화면 표시 함수 (신규)
@@ -97,17 +92,15 @@ function filterQuestions() {
 
 // startQuiz 함수 수정
 function startQuiz() {
-    // 필터링 실행
-    if (!filterQuestions()) {
-        return;
-    }
-    
     // 퀴즈 시작 상태로 변경
     quizStarted = true;
     
     // 선택 화면 숨기고 퀴즈 화면 표시
     selectionContainer.style.display = 'none';
     quizContainer.style.display = 'block';
+    
+    // 점수 초기화
+    initScores();
     
     // 첫 문제 표시
     currentQuestionIndex = 0;
@@ -380,7 +373,7 @@ function handleSubmit() {
     }
 }
 
-// 결과 표시
+// 결과 표시 함수에 점수 업데이트 로직 추가
 function displayResult(isCorrect, userAnswer, correctAnswer) {
     resultContainer.innerHTML = '';
     
@@ -404,6 +397,20 @@ function displayResult(isCorrect, userAnswer, correctAnswer) {
     resultDiv.appendChild(resultIcon);
     resultDiv.appendChild(resultText);
     resultContainer.appendChild(resultDiv);
+    
+    // 점수 업데이트 (오답 복습 모드가 아닐 때만)
+    if (!isReviewMode) {
+        const currentQuestion = filteredQuestions[currentQuestionIndex];
+        
+        // 정답이면 해당 챕터의 점수 증가
+        if (isCorrect) {
+            scoreByChapter[currentQuestion.chapter].correct++;
+            totalScore++;
+        }
+        
+        // 이미 진행한 문제 수 카운트
+        totalQuestions++;
+    }
     
     // 틀린 문제 저장 (오답 복습 모드가 아닐 때만)
     if (!isCorrect && !isReviewMode) {
@@ -450,14 +457,16 @@ function showPreviousQuestion() {
 
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
-    if (currentQuestionIndex < filteredQuestions.length - 1) {
-        currentQuestionIndex++;
-        updateQuestionCounter();
-        displayQuestion();
-    } else {
-        // 마지막 문제를 풀었을 때 처리
-        handleLastQuestion();
+    // 현재가 마지막 문제인 경우 결과 페이지 표시
+    if (currentQuestionIndex === filteredQuestions.length - 1) {
+        showQuizResult();
+        return;
     }
+    
+    // 다음 문제 표시
+    currentQuestionIndex++;
+    updateQuestionCounter();
+    displayQuestion();
 }
 
 // 마지막 문제 처리 함수 추가
@@ -512,6 +521,62 @@ function handleLastQuestion() {
     
     choiceContainer.appendChild(buttonContainer);
     resultContainer.appendChild(choiceContainer);
+}
+
+// 점수 결과 표시 함수
+function showQuizResult() {
+    questionContainer.innerHTML = '';
+    resultContainer.innerHTML = '';
+    
+    const resultPage = document.createElement('div');
+    resultPage.className = 'quiz-result';
+    
+    // 전체 점수 표시
+    const totalScoreElement = document.createElement('h2');
+    totalScoreElement.textContent = `총점: ${totalScore}/${totalQuestions}점 (${Math.round(totalScore / totalQuestions * 100)}%)`;
+    resultPage.appendChild(totalScoreElement);
+    
+    // 각 장별 점수 표시
+    const chapterScores = document.createElement('div');
+    chapterScores.className = 'chapter-scores';
+    
+    Object.keys(scoreByChapter).sort().forEach(chapter => {
+        const score = scoreByChapter[chapter];
+        if (score.total > 0) { // 해당 챕터의 문제를 풀었을 경우만 표시
+            const chapterScore = document.createElement('div');
+            chapterScore.className = 'chapter-score';
+            
+            const percentage = Math.round(score.correct / score.total * 100);
+            chapterScore.innerHTML = `
+                <h3>${chapter}</h3>
+                <p>${score.correct}/${score.total}점 (${percentage}%)</p>
+                <div class="progress-bar">
+                    <div class="progress" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            chapterScores.appendChild(chapterScore);
+        }
+    });
+    
+    resultPage.appendChild(chapterScores);
+    
+    // 다시 시작 버튼
+    const restartButton = document.createElement('button');
+    restartButton.className = 'restart-button';
+    restartButton.textContent = '처음으로';
+    restartButton.addEventListener('click', () => {
+        init();
+    });
+    
+    resultPage.appendChild(restartButton);
+    questionContainer.appendChild(resultPage);
+    
+    // 버튼 상태 변경
+    prevButton.style.display = 'none';
+    nextButton.style.display = 'none';
+    submitButton.style.display = 'none';
+    showAnswerButton.style.display = 'none';
+    document.getElementById('question-counter').style.display = 'none';
 }
 
 // 버튼 상태 업데이트
@@ -592,6 +657,22 @@ function resetQuiz() {
     showSelectionScreen();
 }
 
+// 점수 초기화 함수
+function initScores() {
+    scoreByChapter = {};
+    totalScore = 0;
+    totalQuestions = 0;
+    
+    // 모든 장에 대한 점수 초기화
+    const chapters = [...new Set(questions.map(q => q.chapter))];
+    chapters.forEach(chapter => {
+        scoreByChapter[chapter] = {
+            correct: 0,
+            total: questions.filter(q => q.chapter === chapter).length
+        };
+    });
+}
+
 // CSS 스타일 추가
 const style = document.createElement('style');
 style.textContent = `
@@ -637,6 +718,56 @@ style.textContent = `
 }
 
 .choice-container .return-button:hover {
+    background-color: #1976D2;
+}
+
+.quiz-result {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.quiz-result h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.chapter-scores {
+    margin: 1.5rem 0;
+}
+
+.chapter-score {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s;
+}
+
+.restart-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.restart-button:hover {
     background-color: #1976D2;
 }
 `;
