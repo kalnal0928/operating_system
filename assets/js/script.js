@@ -184,6 +184,7 @@ function displayMultipleChoiceQuestion(question) {
         input.name = 'option';
         input.value = option;
         input.id = `option-${index}`;
+        input.dataset.optionNumber = (index + 1).toString(); // 옵션 번호 저장
         
         // 라디오 버튼에 변경 이벤트 리스너 추가
         input.addEventListener('change', () => {
@@ -214,11 +215,12 @@ function displayMultipleChoiceQuestion(question) {
             }
         });
         
-        const labelText = document.createElement('span');
-        labelText.textContent = option;
+        // 옵션 번호와 텍스트를 포함하는 span 생성
+        const labelContent = document.createElement('span');
+        labelContent.innerHTML = `<span class="option-number">${index + 1}.</span> ${option}`;
         
         optionLabel.appendChild(input);
-        optionLabel.appendChild(labelText);
+        optionLabel.appendChild(labelContent);
         optionsContainer.appendChild(optionLabel);
     });
     
@@ -281,11 +283,12 @@ document.addEventListener('keydown', function(event) {
         const numKey = parseInt(event.key);
         if (numKey >= 1 && numKey <= 4) {  // 1~4 키 처리
             event.preventDefault();
-            const options = document.querySelectorAll('input[name="option"]');
-            if (options[numKey - 1]) {  // 해당 번호의 옵션이 존재하는 경우
-                options[numKey - 1].checked = true;
+            // 해당 번호의 옵션 찾기
+            const targetOption = document.querySelector(`input[name="option"][data-option-number="${numKey}"]`);
+            if (targetOption && !targetOption.disabled) {  // 옵션이 존재하고 비활성화되지 않은 경우
+                targetOption.checked = true;
                 // change 이벤트를 수동으로 발생시켜 정답 체크 로직 실행
-                options[numKey - 1].dispatchEvent(new Event('change'));
+                targetOption.dispatchEvent(new Event('change'));
             }
             return;
         }
@@ -657,6 +660,31 @@ style.textContent = `
 
 .choice-container .return-button:hover {
     background-color: #1976D2;
+}
+
+.option-number {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #666;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.option-label:hover {
+    background-color: #f5f5f5;
+}
+
+.option-label input[type="radio"] {
+    margin-right: 8px;
 }
 `;
 document.head.appendChild(style);
