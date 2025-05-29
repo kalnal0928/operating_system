@@ -273,11 +273,26 @@ document.addEventListener('keydown', function(event) {
     // 퀴즈가 시작된 경우에만 처리
     if (!quizStarted) return;
     
+    const currentQuestion = filteredQuestions[currentQuestionIndex];
+    if (!currentQuestion) return;
+
+    // 객관식 문제에서 숫자 키 처리
+    if (currentQuestion.type === 'multiple-choice') {
+        const numKey = parseInt(event.key);
+        if (numKey >= 1 && numKey <= 4) {  // 1~4 키 처리
+            event.preventDefault();
+            const options = document.querySelectorAll('input[name="option"]');
+            if (options[numKey - 1]) {  // 해당 번호의 옵션이 존재하는 경우
+                options[numKey - 1].checked = true;
+                // change 이벤트를 수동으로 발생시켜 정답 체크 로직 실행
+                options[numKey - 1].dispatchEvent(new Event('change'));
+            }
+            return;
+        }
+    }
+    
     // 엔터키 눌렸을 때 처리
     if (event.key === 'Enter') {
-        const currentQuestion = filteredQuestions[currentQuestionIndex];
-        if (!currentQuestion) return;
-        
         // 현재 문제가 빈칸 채우기인 경우
         if (currentQuestion.type === 'fill-in-blank') {
             event.preventDefault();
