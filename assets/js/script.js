@@ -24,6 +24,7 @@ let isReviewMode = false; // 오답 복습 모드 여부
 let quizStarted = false;  // 퀴즈 시작 여부 추가
 let isAnswerSubmitted = false; // 답안 제출 상태 추가
 let isMultipleChoiceAnswered = false; // 객관식 답변 상태 추가
+let isEssayAnswerShown = false; // 서술형 정답 표시 상태 추가
 
 // 초기화 함수 수정
 function init() {
@@ -163,11 +164,12 @@ function displayQuestion() {
     updateButtonStates();
 }
 
-// 문제 상태 초기화 함수 추가
+// 문제 상태 초기화 함수 수정
 function resetQuestionStates() {
     console.log('문제 상태 초기화');
     isAnswerSubmitted = false;
     isMultipleChoiceAnswered = false;
+    isEssayAnswerShown = false;
 }
 
 // 객관식 문제 표시 함수 수정
@@ -289,8 +291,9 @@ function displayFillInBlankQuestion(question) {
     showAnswerButton.disabled = false;
 }
 
-// 서술형 문제 표시
+// 서술형 문제 표시 함수 수정
 function displayEssayQuestion(question) {
+    console.log('서술형 문제 표시');
     const essayContainer = document.createElement('div');
     essayContainer.className = 'essay-container';
     
@@ -301,8 +304,11 @@ function displayEssayQuestion(question) {
     
     essayContainer.appendChild(textarea);
     questionContainer.appendChild(essayContainer);
+    
+    // 서술형 문제에서는 제출 버튼만 표시
+    submitButton.style.display = 'block';
+    showAnswerButton.style.display = 'none';  // 정답 보기 버튼 숨김
     submitButton.disabled = false;
-    showAnswerButton.disabled = false;
 }
 
 // 정답 검증 함수 (예시)
@@ -360,7 +366,11 @@ function handleSubmit() {
             const essayInput = document.querySelector('.essay-input');
             if (essayInput && essayInput.value.trim()) {
                 userAnswer = essayInput.value.trim();
-                showMessage('서술형 문제가 제출되었습니다. 정답을 확인하세요.', 'info');
+                // 서술형 문제는 제출 후 정답 표시
+                isAnswerSubmitted = true;
+                essayInput.disabled = true;  // 입력 필드 비활성화
+                showAnswer();  // 정답 표시
+                isEssayAnswerShown = true;  // 정답 표시 상태 업데이트
                 return;
             } else {
                 showMessage('답변을 작성해주세요!', 'warning');
@@ -412,7 +422,7 @@ function displayResult(isCorrect, userAnswer, correctAnswer) {
     }
 }
 
-// 정답 보기
+// 정답 보기 함수 수정
 function showAnswer() {
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     
@@ -424,7 +434,9 @@ function showAnswer() {
     answerTitle.textContent = '정답:';
     
     const answerText = document.createElement('p');
-    answerText.textContent = currentQuestion.answer;
+    answerText.textContent = Array.isArray(currentQuestion.answer) 
+        ? currentQuestion.answer.join(', ') 
+        : currentQuestion.answer;
     
     answerDiv.appendChild(answerTitle);
     answerDiv.appendChild(answerText);
@@ -663,7 +675,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// 전역 키 이벤트 리스너
+// 전역 키 이벤트 리스너 수정
 document.addEventListener('keydown', function(event) {
     // 퀴즈가 시작된 경우에만 처리
     if (!quizStarted) return;
@@ -695,6 +707,18 @@ document.addEventListener('keydown', function(event) {
                 showNextQuestion();
             } else {
                 console.log('빈칸 채우기 엔터키: 답안 제출');
+                handleSubmit();
+            }
+            return;
+        }
+
+        // 서술형 문제 처리
+        if (currentQuestion.type === 'essay') {
+            if (isEssayAnswerShown) {
+                console.log('서술형 정답 확인 후 엔터키: 다음 문제로 이동');
+                showNextQuestion();
+            } else {
+                console.log('서술형 엔터키: 답안 제출 및 정답 확인');
                 handleSubmit();
             }
             return;
