@@ -663,3 +663,57 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// 전역 키 이벤트 리스너
+document.addEventListener('keydown', function(event) {
+    // 퀴즈가 시작된 경우에만 처리
+    if (!quizStarted) return;
+    
+    const currentQuestion = filteredQuestions[currentQuestionIndex];
+    if (!currentQuestion) return;
+
+    // 엔터키 눌렸을 때 처리
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        // 객관식 문제 처리
+        if (currentQuestion.type === 'multiple-choice') {
+            // 답을 선택한 후 엔터키를 누른 경우에만 다음 문제로 이동
+            if (isMultipleChoiceAnswered) {
+                console.log('객관식 답변 후 엔터키: 다음 문제로 이동');
+                showNextQuestion();
+            }
+            return;
+        }
+        
+        // 빈칸 채우기 문제 처리
+        if (currentQuestion.type === 'fill-in-blank') {
+            const blankInput = document.querySelector('.blank-input');
+            if (!blankInput) return;
+            
+            if (isAnswerSubmitted) {
+                console.log('빈칸 채우기 답변 후 엔터키: 다음 문제로 이동');
+                showNextQuestion();
+            } else {
+                console.log('빈칸 채우기 엔터키: 답안 제출');
+                handleSubmit();
+            }
+            return;
+        }
+    }
+
+    // 객관식 문제에서 숫자 키 처리 (엔터키가 아닌 경우에만)
+    if (currentQuestion.type === 'multiple-choice' && !isMultipleChoiceAnswered) {
+        const numKey = parseInt(event.key);
+        if (numKey >= 1 && numKey <= 4) {  // 1~4 키 처리
+            event.preventDefault();
+            // 해당 번호의 옵션 찾기
+            const targetOption = document.querySelector(`input[name="option"][data-option-number="${numKey}"]`);
+            if (targetOption && !targetOption.disabled) {  // 옵션이 존재하고 비활성화되지 않은 경우
+                targetOption.checked = true;
+                // change 이벤트를 수동으로 발생시켜 정답 체크 로직 실행
+                targetOption.dispatchEvent(new Event('change'));
+            }
+        }
+    }
+});
+
