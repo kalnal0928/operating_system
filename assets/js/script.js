@@ -300,7 +300,7 @@ function displayEssayQuestion(question) {
     const textarea = document.createElement('textarea');
     textarea.className = 'essay-input';
     textarea.rows = 6;
-    textarea.placeholder = '답변을 작성하세요... (엔터키로 정답 확인)';
+    textarea.placeholder = '답변을 작성하세요... (엔터키로 정답 확인, 한 번 더 누르면 다음 문제)';
     
     essayContainer.appendChild(textarea);
     questionContainer.appendChild(essayContainer);
@@ -371,7 +371,7 @@ function handleSubmit() {
             const essayInput = document.querySelector('.essay-input');
             if (essayInput && essayInput.value.trim()) {
                 userAnswer = essayInput.value.trim();
-                // 서술형 문제는 제출 후 정답 표시
+                // 답변이 있는 경우에만 제출 상태로 변경
                 isAnswerSubmitted = true;
                 essayInput.disabled = true;  // 입력 필드 비활성화
             }
@@ -722,7 +722,16 @@ document.addEventListener('keydown', function(event) {
                 showNextQuestion();
             } else {
                 console.log('서술형 엔터키: 정답 확인');
-                handleSubmit();  // 답변 유무와 관계없이 정답 표시
+                // 답변 유무와 관계없이 정답 표시
+                const essayInput = document.querySelector('.essay-input');
+                if (essayInput && essayInput.value.trim()) {
+                    // 답변이 있는 경우 제출 처리
+                    handleSubmit();
+                } else {
+                    // 답변이 없는 경우 정답만 표시
+                    showAnswer();
+                    isEssayAnswerShown = true;
+                }
             }
             return;
         }
