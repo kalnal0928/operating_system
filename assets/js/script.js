@@ -684,24 +684,6 @@ function resetQuiz() {
     showSelectionScreen();
 }
 
-// 점수 초기화 함수
-function initScores() {
-    scoreByChapter = {};
-    totalScore = 0;
-    totalQuestions = 0;
-    
-    // 모든 장에 대한 점수 초기화
-    const chapters = [...new Set(questions.map(q => q.chapter))];
-    chapters.forEach(chapter => {
-        scoreByChapter[chapter] = {
-            correct: 0,
-            total: questions.filter(q => q.chapter === chapter).length
-        };
-    });
-    
-    console.log('점수 초기화 완료:', scoreByChapter);
-}
-
 // CSS 스타일 추가
 const style = document.createElement('style');
 style.textContent = `
