@@ -28,6 +28,24 @@ let scoreByChapter = {};
 let totalScore = 0;
 let totalQuestions = 0;
 
+// initScores 함수를 전역 객체의 속성으로 정의 (중복 선언 방지)
+window.initScores = window.initScores || function() {
+    scoreByChapter = {};
+    totalScore = 0;
+    totalQuestions = 0;
+    
+    // 모든 장에 대한 점수 초기화
+    const chapters = [...new Set(questions.map(q => q.chapter))];
+    chapters.forEach(chapter => {
+        scoreByChapter[chapter] = {
+            correct: 0,
+            total: questions.filter(q => q.chapter === chapter).length
+        };
+    });
+    
+    console.log('점수 초기화 완료:', scoreByChapter);
+};
+
 // 초기화 함수 수정
 function init() {
     incorrectQuestions = [];
@@ -35,30 +53,10 @@ function init() {
     quizStarted = false;
     
     // 점수 초기화
-    initScores();
+    window.initScores(); // window 객체의 속성으로 접근
     
     // 선택 화면 표시, 문제 화면 숨김
     showSelectionScreen();
-}
-
-// 함수가 이미 정의되어 있지 않은 경우에만 선언
-if (typeof initScores !== 'function') {
-    function initScores() {
-        scoreByChapter = {};
-        totalScore = 0;
-        totalQuestions = 0;
-        
-        // 모든 장에 대한 점수 초기화
-        const chapters = [...new Set(questions.map(q => q.chapter))];
-        chapters.forEach(chapter => {
-            scoreByChapter[chapter] = {
-                correct: 0,
-                total: questions.filter(q => q.chapter === chapter).length
-            };
-        });
-        
-        console.log('점수 초기화 완료:', scoreByChapter);
-    }
 }
 
 // 선택 화면 표시 함수 (신규)
