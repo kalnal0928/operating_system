@@ -22,6 +22,9 @@ let filteredQuestions = [];  // 빈 배열로 시작
 let incorrectQuestions = []; // 틀린 문제 저장 배열
 let isReviewMode = false; // 오답 복습 모드 여부
 let quizStarted = false;  // 퀴즈 시작 여부 추가
+let isAnswerSubmitted = false; // 답안 제출 상태 추가
+let isMultipleChoiceAnswered = false; // 객관식 답변 상태 추가
+let isEssayAnswerShown = false; // 서술형 정답 표시 상태 추가
 
 // 초기화 함수 수정
 function init() {
@@ -122,6 +125,9 @@ function startQuiz() {
 function displayQuestion() {
     if (filteredQuestions.length === 0) return;
     
+    // 문제 유형이 바뀔 때마다 상태 초기화
+    resetQuestionStates();
+    
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     questionContainer.innerHTML = '';  // 컨테이너 초기화
     resultContainer.innerHTML = '';    // 결과 컨테이너 초기화
@@ -161,8 +167,19 @@ function displayQuestion() {
     updateButtonStates();
 }
 
-// 객관식 문제 표시 함수 수정 - 옵션 랜덤 섞기 추가
+// 문제 상태 초기화 함수 수정
+function resetQuestionStates() {
+    console.log('문제 상태 초기화');
+    isAnswerSubmitted = false;
+    isMultipleChoiceAnswered = false;
+    isEssayAnswerShown = false;
+}
+
+// 객관식 문제 표시 함수 수정
 function displayMultipleChoiceQuestion(question) {
+    // 상태 초기화는 displayQuestion에서 처리하므로 여기서는 제거
+    console.log('객관식 문제 표시');
+    
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
     
@@ -186,10 +203,12 @@ function displayMultipleChoiceQuestion(question) {
         input.name = 'option';
         input.value = option;
         input.id = `option-${index}`;
+        input.dataset.optionNumber = (index + 1).toString();
         
         // 라디오 버튼에 변경 이벤트 리스너 추가
         input.addEventListener('change', () => {
             if (input.checked) {
+                console.log('객관식 답변 선택됨');
                 // 선택 즉시 정답 체크
                 const isCorrect = option === correctAnswer;
                 displayResult(isCorrect, option, correctAnswer);
@@ -207,20 +226,25 @@ function displayMultipleChoiceQuestion(question) {
                     }
                 });
 
+                // 객관식 답변 상태 업데이트
+                isMultipleChoiceAnswered = true;
+                console.log('객관식 답변 상태 업데이트:', isMultipleChoiceAnswered);
+
                 // 마지막 문제인 경우 잠시 후 선택지 표시
                 if (currentQuestionIndex === filteredQuestions.length - 1) {
                     setTimeout(() => {
                         handleLastQuestion();
-                    }, 1500); // 1.5초 후 선택지 표시
+                    }, 1500);
                 }
             }
         });
         
-        const labelText = document.createElement('span');
-        labelText.textContent = option;
+        // 옵션 번호와 텍스트를 포함하는 span 생성
+        const labelContent = document.createElement('span');
+        labelContent.innerHTML = `<span class="option-number">${index + 1}.</span> ${option}`;
         
         optionLabel.appendChild(input);
-        optionLabel.appendChild(labelText);
+        optionLabel.appendChild(labelContent);
         optionsContainer.appendChild(optionLabel);
     });
     
@@ -229,6 +253,9 @@ function displayMultipleChoiceQuestion(question) {
 
 // 빈칸 채우기 문제 표시 함수 수정
 function displayFillInBlankQuestion(question) {
+    // 상태 초기화는 displayQuestion에서 처리하므로 여기서는 제거
+    console.log('빈칸 채우기 문제 표시');
+    
     const answerContainer = document.createElement('div');
     answerContainer.className = 'fill-blank-container';
 
@@ -250,7 +277,7 @@ function displayFillInBlankQuestion(question) {
         // 모바일 환경을 위한 blur 이벤트
         blankInput.addEventListener('blur', () => {
             // 입력 필드에서 포커스가 벗어날 때 자동 제출 (선택적)
-            if (blankInput.value.trim() && !blankInput.disabled) {
+            if (blankInput.value.trim() && !isAnswerSubmitted) {
                 handleSubmit();
             }
         });
@@ -267,49 +294,29 @@ function displayFillInBlankQuestion(question) {
     showAnswerButton.disabled = false;
 }
 
-// 전역 키 이벤트 리스너 수정
-document.addEventListener('keydown', function(event) {
-    // 퀴즈가 시작된 경우에만 처리
-    if (!quizStarted) return;
-    
-    // 엔터키 눌렸을 때 처리
-    if (event.key === 'Enter') {
-        const currentQuestion = filteredQuestions[currentQuestionIndex];
-        if (!currentQuestion) return;
-        
-        // 현재 문제가 빈칸 채우기인 경우
-        if (currentQuestion.type === 'fill-in-blank') {
-            event.preventDefault();
-            
-            const blankInput = document.querySelector('.blank-input');
-            if (!blankInput) return;
-            
-            // 이미 제출된 상태인지 확인 (disabled 상태)
-            if (blankInput.disabled) {
-                // 이미 제출된 상태라면 다음 문제로 이동
-                showNextQuestion();
-            } else {
-                // 아직 제출되지 않았다면 제출
-                handleSubmit();
-            }
-        }
-    }
-});
-
-// 서술형 문제 표시
+// 서술형 문제 표시 함수 수정
 function displayEssayQuestion(question) {
+    console.log('서술형 문제 표시');
     const essayContainer = document.createElement('div');
     essayContainer.className = 'essay-container';
     
     const textarea = document.createElement('textarea');
     textarea.className = 'essay-input';
     textarea.rows = 6;
-    textarea.placeholder = '답변을 작성하세요...';
+    textarea.placeholder = '답변을 작성하세요... (엔터키로 정답 확인, 한 번 더 누르면 다음 문제)';
     
     essayContainer.appendChild(textarea);
     questionContainer.appendChild(essayContainer);
+    
+    // 서술형 문제에서는 제출 버튼만 표시
+    submitButton.style.display = 'block';
+    showAnswerButton.style.display = 'none';  // 정답 보기 버튼 숨김
     submitButton.disabled = false;
-    showAnswerButton.disabled = false;
+
+    // 자동 포커스 설정
+    setTimeout(() => {
+        textarea.focus();
+    }, 100);
 }
 
 // 정답 검증 함수 (예시)
@@ -353,6 +360,10 @@ function handleSubmit() {
                 } else {
                     isCorrect = userAnswer.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase();
                 }
+                
+                // 답안 제출 상태 업데이트
+                isAnswerSubmitted = true;
+                blankInput.disabled = true;
             } else {
                 showMessage('빈칸을 채워주세요!', 'warning');
                 return;
@@ -363,24 +374,18 @@ function handleSubmit() {
             const essayInput = document.querySelector('.essay-input');
             if (essayInput && essayInput.value.trim()) {
                 userAnswer = essayInput.value.trim();
-                showMessage('서술형 문제가 제출되었습니다. 정답을 확인하세요.', 'info');
-                return;
-            } else {
-                showMessage('답변을 작성해주세요!', 'warning');
-                return;
+                // 답변이 있는 경우에만 제출 상태로 변경
+                isAnswerSubmitted = true;
+                essayInput.disabled = true;  // 입력 필드 비활성화
             }
+            // 답변 유무와 관계없이 정답 표시
+            showAnswer();
+            isEssayAnswerShown = true;  // 정답 표시 상태 업데이트
+            return;
     }
     
     // 결과 표시
     displayResult(isCorrect, userAnswer, currentQuestion.answer);
-    
-    // 빈칸 채우기 문제의 경우 입력 필드 비활성화
-    if (currentQuestion.type === 'fill-in-blank') {
-        const blankInput = document.querySelector('.blank-input');
-        if (blankInput) {
-            blankInput.disabled = true;
-        }
-    }
 }
 
 // 결과 표시
@@ -423,7 +428,7 @@ function displayResult(isCorrect, userAnswer, correctAnswer) {
     }
 }
 
-// 정답 보기
+// 정답 보기 함수 수정
 function showAnswer() {
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     
@@ -435,7 +440,9 @@ function showAnswer() {
     answerTitle.textContent = '정답:';
     
     const answerText = document.createElement('p');
-    answerText.textContent = currentQuestion.answer;
+    answerText.textContent = Array.isArray(currentQuestion.answer) 
+        ? currentQuestion.answer.join(', ') 
+        : currentQuestion.answer;
     
     answerDiv.appendChild(answerTitle);
     answerDiv.appendChild(answerText);
@@ -453,6 +460,9 @@ function showPreviousQuestion() {
 
 // 다음 문제 표시 함수 수정
 function showNextQuestion() {
+    console.log('다음 문제로 이동');
+    // 상태 초기화는 displayQuestion에서 처리하므로 여기서는 제거
+    
     if (currentQuestionIndex < filteredQuestions.length - 1) {
         currentQuestionIndex++;
         updateQuestionCounter();
@@ -577,7 +587,7 @@ function showResetButton() {
     resultContainer.appendChild(resetBtn);
 }
 
-// 퀴즈 리셋 함수
+// 퀴즈 리셋 함수 수정
 function resetQuiz() {
     // 상태 초기화
     incorrectQuestions = [];
@@ -585,6 +595,7 @@ function resetQuiz() {
     quizStarted = false;
     currentQuestionIndex = 0;
     filteredQuestions = [];
+    resetQuestionStates();  // 문제 상태 초기화 함수 사용
     
     // 필터 초기화
     selectionChapterFilter.value = '선택하세요';
@@ -641,6 +652,106 @@ style.textContent = `
 .choice-container .return-button:hover {
     background-color: #1976D2;
 }
+
+.option-number {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #666;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.option-label:hover {
+    background-color: #f5f5f5;
+}
+
+.option-label input[type="radio"] {
+    margin-right: 8px;
+}
 `;
 document.head.appendChild(style);
+
+// 전역 키 이벤트 리스너 수정
+document.addEventListener('keydown', function(event) {
+    // 퀴즈가 시작된 경우에만 처리
+    if (!quizStarted) return;
+    
+    const currentQuestion = filteredQuestions[currentQuestionIndex];
+    if (!currentQuestion) return;
+
+    // 엔터키 눌렸을 때 처리
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        // 객관식 문제 처리
+        if (currentQuestion.type === 'multiple-choice') {
+            // 답을 선택한 후 엔터키를 누른 경우에만 다음 문제로 이동
+            if (isMultipleChoiceAnswered) {
+                console.log('객관식 답변 후 엔터키: 다음 문제로 이동');
+                showNextQuestion();
+            }
+            return;
+        }
+        
+        // 빈칸 채우기 문제 처리
+        if (currentQuestion.type === 'fill-in-blank') {
+            const blankInput = document.querySelector('.blank-input');
+            if (!blankInput) return;
+            
+            if (isAnswerSubmitted) {
+                console.log('빈칸 채우기 답변 후 엔터키: 다음 문제로 이동');
+                showNextQuestion();
+            } else {
+                console.log('빈칸 채우기 엔터키: 답안 제출');
+                handleSubmit();
+            }
+            return;
+        }
+
+        // 서술형 문제 처리
+        if (currentQuestion.type === 'essay') {
+            if (isEssayAnswerShown) {
+                console.log('서술형 정답 확인 후 엔터키: 다음 문제로 이동');
+                showNextQuestion();
+            } else {
+                console.log('서술형 엔터키: 정답 확인');
+                // 답변 유무와 관계없이 정답 표시
+                const essayInput = document.querySelector('.essay-input');
+                if (essayInput && essayInput.value.trim()) {
+                    // 답변이 있는 경우 제출 처리
+                    handleSubmit();
+                } else {
+                    // 답변이 없는 경우 정답만 표시
+                    showAnswer();
+                    isEssayAnswerShown = true;
+                }
+            }
+            return;
+        }
+    }
+
+    // 객관식 문제에서 숫자 키 처리 (엔터키가 아닌 경우에만)
+    if (currentQuestion.type === 'multiple-choice' && !isMultipleChoiceAnswered) {
+        const numKey = parseInt(event.key);
+        if (numKey >= 1 && numKey <= 4) {  // 1~4 키 처리
+            event.preventDefault();
+            // 해당 번호의 옵션 찾기
+            const targetOption = document.querySelector(`input[name="option"][data-option-number="${numKey}"]`);
+            if (targetOption && !targetOption.disabled) {  // 옵션이 존재하고 비활성화되지 않은 경우
+                targetOption.checked = true;
+                // change 이벤트를 수동으로 발생시켜 정답 체크 로직 실행
+                targetOption.dispatchEvent(new Event('change'));
+            }
+        }
+    }
+});
 
