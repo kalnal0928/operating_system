@@ -158,12 +158,23 @@ function displayQuestion() {
     updateButtonStates();
 }
 
-// 객관식 문제 표시 함수 수정
+// 객관식 문제 표시 함수 수정 - 옵션 랜덤 섞기 추가
 function displayMultipleChoiceQuestion(question) {
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'options-container';
     
-    question.options.forEach((option, index) => {
+    // 원본 옵션과 정답을 저장
+    const originalOptions = [...question.options];
+    const correctAnswer = question.answer;
+    
+    // 옵션 배열을 섞기
+    const shuffledOptions = [...originalOptions];
+    for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+    }
+    
+    shuffledOptions.forEach((option, index) => {
         const optionLabel = document.createElement('label');
         optionLabel.className = 'option-label';
         
@@ -177,8 +188,8 @@ function displayMultipleChoiceQuestion(question) {
         input.addEventListener('change', () => {
             if (input.checked) {
                 // 선택 즉시 정답 체크
-                const isCorrect = option === question.answer;
-                displayResult(isCorrect, option, question.answer);
+                const isCorrect = option === correctAnswer;
+                displayResult(isCorrect, option, correctAnswer);
                 
                 // 모든 라디오 버튼 비활성화하여 추가 선택 방지
                 document.querySelectorAll('input[name="option"]').forEach(radio => {
@@ -188,7 +199,7 @@ function displayMultipleChoiceQuestion(question) {
                 // 정답인 항목 강조
                 document.querySelectorAll('.option-label').forEach(label => {
                     const radioInput = label.querySelector('input[type="radio"]');
-                    if (radioInput.value === question.answer) {
+                    if (radioInput.value === correctAnswer) {
                         label.classList.add('correct-answer');
                     }
                 });
